@@ -13,15 +13,20 @@
       --line:#e5e7eb;
       --soft:#f9fafb;
 
-      /* 高齢者配慮：大きめ */
-      --title:22px;
-      --label:18px;
-      --sub:14px;
-
       --radius:18px;
       --shadow: 0 10px 30px rgba(17,24,39,.08);
-      --tap: 72px;
+
+      /* 高齢者配慮：大きめ */
+      --title:22px;
+      --label:20px;
+      --sub:14px;
+
+      --tap: 76px;
       --max: 520px;
+
+      --blue:#2563eb;
+      --ok:#16a34a;
+      --primary:#111827;
     }
 
     *{ box-sizing:border-box; }
@@ -48,7 +53,6 @@
       margin: 0 auto;
     }
 
-    /* ヘッダー（余計な文言は出さない／でも“それっぽさ”は出す） */
     .header{
       display:flex;
       align-items:center;
@@ -82,7 +86,6 @@
       box-shadow: 0 0 0 6px rgba(34,197,94,.12);
     }
 
-    /* メニューカード */
     .card{
       border:1px solid var(--line);
       border-radius: var(--radius);
@@ -112,6 +115,7 @@
       background:#fff;
       padding: 8px 10px;
       border-radius: 999px;
+      font-weight: 800;
     }
 
     .menu{
@@ -119,7 +123,6 @@
       flex-direction:column;
     }
 
-    /* メニュー項目：大きい、押しやすい、見た目はプロダクトっぽい */
     .item{
       display:flex;
       align-items:center;
@@ -143,16 +146,16 @@
     }
 
     .icon{
-      width: 54px;
-      height: 54px;
-      border-radius: 16px;
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
       border: 1px solid var(--line);
       background: #fff;
       display:grid;
       place-items:center;
       box-shadow: 0 8px 18px rgba(17,24,39,.06);
       flex: 0 0 auto;
-      font-size: 22px;
+      font-size: 24px;
     }
 
     .text{
@@ -173,15 +176,37 @@
       font-size: var(--sub);
       color: var(--muted);
       line-height: 1.2;
+      font-weight: 800;
     }
 
     .chev{
-      font-size: 24px;
+      font-size: 26px;
       color: #9ca3af;
       flex: 0 0 auto;
     }
 
-    /* フッター（余計な文章は入れない） */
+    /* チェックイン（当日専用）を目立たせる */
+    .item.checkin .icon{
+      border-color: rgba(22,163,74,.25);
+      box-shadow: 0 10px 22px rgba(22,163,74,.10);
+    }
+    .item.checkin .label{
+      color: var(--primary);
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:2px;
+      font-size:12px;
+      font-weight:900;
+      color: var(--ok);
+    }
+    .tag .miniDot{
+      width:8px;height:8px;border-radius:999px;background: var(--ok);
+      box-shadow: 0 0 0 5px rgba(22,163,74,.12);
+    }
+
     .footer{
       margin-top: 14px;
       text-align:center;
@@ -190,14 +215,9 @@
       user-select:none;
     }
 
-    /* “凝ってる感”を出すための軽いホバー（WebViewでは効かなくてもOK） */
     @media (hover:hover){
-      .item:hover{
-        background: #fafafa;
-      }
-      .item:hover .icon{
-        transform: translateY(-1px);
-      }
+      .item:hover{ background: #fafafa; }
+      .item:hover .icon{ transform: translateY(-1px); }
     }
   </style>
 </head>
@@ -214,46 +234,55 @@
         </div>
       </div>
 
-      <section class="card" aria-label="メニュー">
+      <section class="card" aria-label="ホーム">
         <div class="card-hd">
-          <div class="h">メニュー</div>
+          <div class="h">ホーム</div>
           <div class="pill" id="openIn">WebView</div>
         </div>
 
         <nav class="menu">
-          <a class="item" href="./reservation.html" aria-label="予約情報へ">
-            <div class="left">
-              <div class="icon">📄</div>
-              <div class="text">
-                <div class="label">予約情報</div>
-                <div class="sub">予約内容の確認</div>
-              </div>
-            </div>
-            <div class="chev">›</div>
-          </a>
 
-          <a class="item" href="./checkin.html" aria-label="チェックインへ">
+          <!-- チェックイン（当日以外は非表示） -->
+          <a class="item checkin" id="checkinItem" href="./checkin.html" aria-label="チェックインへ" style="display:none;">
             <div class="left">
               <div class="icon">✅</div>
               <div class="text">
-                <div class="label">チェックイン</div>
-                <div class="sub">当日の受付</div>
+                <div class="label" id="checkinLabel">チェックイン</div>
+                <div class="sub" id="checkinSub">当日の受付</div>
+                <div class="tag" id="checkinTag" style="display:none;">
+                  <span class="miniDot"></span>
+                  <span>チェックイン済み</span>
+                </div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
-          <a class="item" href="./order.html" aria-label="オーダーへ">
+          <!-- マイページ（中に予約情報を含む想定） -->
+          <a class="item" href="./mypage.html" aria-label="マイページへ">
+            <div class="left">
+              <div class="icon">👤</div>
+              <div class="text">
+                <div class="label">マイページ</div>
+                <div class="sub">予約情報の確認</div>
+              </div>
+            </div>
+            <div class="chev">›</div>
+          </a>
+
+          <!-- 売店・注文 -->
+          <a class="item" href="./order.html" aria-label="売店・注文へ">
             <div class="left">
               <div class="icon">🛒</div>
               <div class="text">
-                <div class="label">オーダー</div>
-                <div class="sub">売店</div>
+                <div class="label">売店・注文</div>
+                <div class="sub">売店／ラウンジ</div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
+          <!-- 館内案内 -->
           <a class="item" href="./map.html" aria-label="館内案内へ">
             <div class="left">
               <div class="icon">🗺️</div>
@@ -264,6 +293,7 @@
             </div>
             <div class="chev">›</div>
           </a>
+
         </nav>
       </section>
 
@@ -272,7 +302,7 @@
   </div>
 
   <script>
-    // 環境表示（ngrok/localhostざっくり）
+    // ===== 環境表示（ngrok/localhostざっくり） =====
     (function(){
       const h = location.hostname;
       const isNgrok = h.includes("ngrok");
@@ -282,11 +312,37 @@
       document.getElementById("dot").style.boxShadow = isLocal ? "0 0 0 6px rgba(245,158,11,.14)" : "0 0 0 6px rgba(34,197,94,.12)";
     })();
 
-    // 起動環境（LINE WebViewっぽいか）
+    // ===== 起動環境（LINE WebViewっぽいか） =====
     (function(){
       const ua = navigator.userAgent || "";
       const inLine = ua.includes("Line") || ua.includes("LINE");
       document.getElementById("openIn").textContent = inLine ? "LINE" : "WebView";
+    })();
+
+    // ===== 当日判定（モック用）=====
+    // 本番は「予約日時」や「施設の当日判定API」等で制御する想定
+    // モックでは URL パラメータで切り替え： ?day=today で当日扱い
+    (function(){
+      const params = new URLSearchParams(location.search);
+      const isTodayDemo = params.get("day") === "today";
+
+      const checkinItem = document.getElementById("checkinItem");
+      if(isTodayDemo){
+        checkinItem.style.display = "";
+      } else {
+        checkinItem.style.display = "none";
+      }
+
+      // チェックイン済み（checkin.html側のlocalStorage）に合わせて表示だけ変更
+      const raw = localStorage.getItem("miniapp_checkin_done");
+      if(raw){
+        try{
+          JSON.parse(raw);
+          document.getElementById("checkinTag").style.display = "";
+          document.getElementById("checkinSub").textContent = "当日QRの確認";
+          document.getElementById("checkinLabel").textContent = "チェックイン";
+        }catch{}
+      }
     })();
   </script>
 </body>
