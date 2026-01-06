@@ -13,7 +13,6 @@
       --line:#e5e7eb;
       --soft:#f9fafb;
 
-      /* 高齢者配慮：大きめ */
       --title:22px;
       --label:20px;
       --sub:14px;
@@ -32,11 +31,9 @@
     html,body{ height:100%; }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
       background: var(--bg);
       color: var(--text);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     .safe{
@@ -52,73 +49,83 @@
       margin: 0 auto;
     }
 
-    /* ヘッダー */
+    /* ===== ヘッダー ===== */
     .header{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom: 16px;
+      margin-bottom:16px;
     }
 
     .app-title{
       font-size: var(--title);
-      font-weight: 900;
-      letter-spacing: .02em;
-      line-height: 1.1;
+      font-weight:900;
+    }
+
+    .right-head{
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
 
     .status{
       display:inline-flex;
       align-items:center;
-      gap:10px;
-      padding: 10px 14px;
-      border: 1px solid var(--line);
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid var(--line);
       background: var(--soft);
-      border-radius: 999px;
-      font-size: 13px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
       color: var(--muted);
-      white-space:nowrap;
-      font-weight: 800;
     }
     .dot{
-      width:10px; height:10px; border-radius:999px;
+      width:8px;height:8px;border-radius:999px;
       background:#22c55e;
-      box-shadow: 0 0 0 6px rgba(34,197,94,.12);
+      box-shadow:0 0 0 5px rgba(34,197,94,.12);
     }
 
-    /* メニューカード */
+    .day-switch{
+      display:flex;
+      gap:4px;
+    }
+    .day-switch button{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 10px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .day-switch button.active{
+      background: var(--primary);
+      color:#fff;
+      border-color: var(--primary);
+    }
+
+    /* ===== カード ===== */
     .card{
       border:1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow:hidden;
       background:#fff;
+      overflow:hidden;
     }
 
     .card-hd{
-      padding: 14px 16px;
-      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
-      border-bottom: 1px solid var(--line);
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:10px;
+      align-items:center;
+      background:linear-gradient(180deg,#fff,#fafafa);
     }
     .card-hd .h{
-      font-size: 16px;
-      font-weight: 900;
-      color:#374151;
-    }
-    .pill{
-      font-size: 12px;
-      color: var(--muted);
-      border: 1px solid var(--line);
-      background:#fff;
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-weight: 800;
-      white-space: nowrap;
+      font-size:16px;
+      font-weight:900;
     }
 
     .menu{
@@ -126,115 +133,73 @@
       flex-direction:column;
     }
 
-    /* メニュー項目：大きい、押しやすい */
     .item{
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      gap:14px;
-      padding: 16px;
+      align-items:center;
+      padding:16px;
       min-height: var(--tap);
+      border-bottom:1px solid var(--line);
       text-decoration:none;
       color: var(--text);
-      border-bottom: 1px solid var(--line);
       background:#fff;
     }
     .item:last-child{ border-bottom:none; }
-    .item:active{ background:#f3f4f6; }
+    .item.disabled{ opacity:.45; pointer-events:none; }
 
     .left{
       display:flex;
-      align-items:center;
       gap:14px;
-      min-width: 0;
+      align-items:center;
     }
-
     .icon{
-      width: 56px;
-      height: 56px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: #fff;
+      width:56px;height:56px;
+      border-radius:18px;
+      border:1px solid var(--line);
       display:grid;
       place-items:center;
-      box-shadow: 0 8px 18px rgba(17,24,39,.06);
-      flex: 0 0 auto;
-      font-size: 24px;
+      font-size:24px;
+      background:#fff;
+      box-shadow:0 8px 18px rgba(17,24,39,.06);
     }
 
     .text{
       display:flex;
       flex-direction:column;
-      gap:6px;
-      min-width: 0;
+      gap:4px;
     }
-    .text .label{
+    .label{
       font-size: var(--label);
-      font-weight: 900;
-      line-height: 1.15;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-weight:900;
     }
-    .text .sub{
+    .sub{
       font-size: var(--sub);
       color: var(--muted);
-      line-height: 1.2;
-      font-weight: 800;
+      font-weight:800;
+    }
+    .note{
+      font-size:12px;
+      color:#9ca3af;
+      font-weight:800;
     }
 
-    .chev{
-      font-size: 26px;
-      color: #9ca3af;
-      flex: 0 0 auto;
-    }
-
-    /* チェックイン目立たせ */
-    .item.checkin .icon{
-      border-color: rgba(22,163,74,.25);
-      box-shadow: 0 10px 22px rgba(22,163,74,.10);
-    }
-
-    /* チェックイン済みタグ */
     .tag{
       display:inline-flex;
+      gap:6px;
       align-items:center;
-      gap:8px;
-      margin-top:2px;
       font-size:12px;
       font-weight:900;
       color: var(--ok);
     }
     .tag .miniDot{
-      width:8px;height:8px;border-radius:999px;background: var(--ok);
-      box-shadow: 0 0 0 5px rgba(22,163,74,.12);
+      width:8px;height:8px;border-radius:999px;
+      background: var(--ok);
+      box-shadow:0 0 0 5px rgba(22,163,74,.12);
     }
 
-    /* 注記（当日以外 / チェックイン後表示など） */
-    .note-checkin{
-      margin-top: 4px;
-      font-size: 12px;
-      font-weight: 800;
-      color: #9ca3af;
-      line-height: 1.2;
-    }
-
-    /* 非活性 */
-    .item.disabled{
-      opacity: 0.45;
-    }
-
-    .footer{
-      margin-top: 14px;
-      text-align:center;
-      font-size: 12px;
+    .chev{
+      font-size:26px;
       color:#9ca3af;
-      user-select:none;
-    }
-
-    @media (hover:hover){
-      .item:hover{ background: #fafafa; }
-      .item:hover .icon{ transform: translateY(-1px); }
     }
   </style>
 </head>
@@ -243,39 +208,40 @@
   <div class="safe">
     <div class="wrap">
 
+      <!-- ヘッダー -->
       <div class="header">
         <div class="app-title">葬儀ミニアプリ</div>
-        <div class="status" aria-label="環境">
-          <span class="dot" id="dot"></span>
-          <span id="env">DEV</span>
+
+        <div class="right-head">
+          <div class="day-switch">
+            <button id="btnToday">当日</button>
+            <button id="btnNotToday">当日以外</button>
+          </div>
+          <div class="status">
+            <span class="dot"></span>
+            <span>DEV</span>
+          </div>
         </div>
       </div>
 
-      <section class="card" aria-label="ホーム">
+      <!-- ホーム -->
+      <section class="card">
         <div class="card-hd">
           <div class="h">ホーム</div>
-          <div class="pill" id="openIn">WebView</div>
         </div>
 
         <nav class="menu">
 
-          <!-- チェックイン：常に表示（当日以外は非活性＋注記） -->
-          <a class="item checkin" id="checkinItem" href="./checkin.html" aria-label="チェックインへ">
+          <!-- チェックイン -->
+          <a class="item" id="checkinItem" href="./checkin.html">
             <div class="left">
               <div class="icon">✅</div>
               <div class="text">
-                <div class="label" id="checkinLabel">チェックイン</div>
+                <div class="label">チェックイン</div>
                 <div class="sub" id="checkinSub">当日の受付</div>
-
-                <!-- 当日以外は表示 -->
-                <div class="note-checkin" id="checkinNote" style="display:none;">
-                  ※当日以外は非表示になります
-                </div>
-
-                <!-- チェックイン済みのとき表示 -->
+                <div class="note" id="checkinNote">※当日以外は非表示になります</div>
                 <div class="tag" id="checkinTag" style="display:none;">
-                  <span class="miniDot"></span>
-                  <span>チェックイン済み</span>
+                  <span class="miniDot"></span>チェックイン済み
                 </div>
               </div>
             </div>
@@ -283,7 +249,7 @@
           </a>
 
           <!-- マイページ -->
-          <a class="item" href="./mypage.html" aria-label="マイページへ">
+          <a class="item" href="./mypage.html">
             <div class="left">
               <div class="icon">👤</div>
               <div class="text">
@@ -294,31 +260,27 @@
             <div class="chev">›</div>
           </a>
 
-          <!-- オーダー（チェックイン後に表示される想定：モックでは非活性＋注記） -->
-          <a class="item" id="orderItem" href="./order.html" aria-label="オーダーへ">
+          <!-- オーダー -->
+          <a class="item" id="orderItem" href="./order.html">
             <div class="left">
               <div class="icon">🛒</div>
               <div class="text">
                 <div class="label">オーダー</div>
                 <div class="sub">売店</div>
-                <div class="note-checkin" id="orderNote" style="display:none;">
-                  ※チェックイン後に表示されます
-                </div>
+                <div class="note" id="orderNote">※チェックイン後に表示されます</div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
-          <!-- 館内マップ（チェックイン後に表示される想定：モックでは非活性＋注記） -->
-          <a class="item" id="mapItem" href="./map.html" aria-label="館内案内へ">
+          <!-- 館内マップ -->
+          <a class="item" id="mapItem" href="./map.html">
             <div class="left">
               <div class="icon">🗺️</div>
               <div class="text">
                 <div class="label">館内マップ</div>
                 <div class="sub">地図／導線</div>
-                <div class="note-checkin" id="mapNote" style="display:none;">
-                  ※チェックイン後に表示されます
-                </div>
+                <div class="note" id="mapNote">※チェックイン後に表示されます</div>
               </div>
             </div>
             <div class="chev">›</div>
@@ -327,88 +289,80 @@
         </nav>
       </section>
 
-      <div class="footer">©</div>
     </div>
   </div>
 
   <script>
-    // ===== 環境表示（ngrok/localhostざっくり） =====
-    (function(){
-      const h = location.hostname;
-      const isNgrok = h.includes("ngrok");
-      const isLocal = h === "localhost" || h === "127.0.0.1";
-      document.getElementById("env").textContent = isNgrok ? "DEV / ngrok" : (isLocal ? "LOCAL" : "DEV");
-      document.getElementById("dot").style.background = isLocal ? "#f59e0b" : "#22c55e";
-      document.getElementById("dot").style.boxShadow = isLocal ? "0 0 0 6px rgba(245,158,11,.14)" : "0 0 0 6px rgba(34,197,94,.12)";
-    })();
+    const DAY_KEY = "miniapp_day_mode";
+    const CHECKIN_KEY = "miniapp_checkin_done";
 
-    // ===== 起動環境（LINE WebViewっぽいか） =====
-    (function(){
-      const ua = navigator.userAgent || "";
-      const inLine = ua.includes("Line") || ua.includes("LINE");
-      document.getElementById("openIn").textContent = inLine ? "LINE" : "WebView";
-    })();
+    const btnToday = document.getElementById("btnToday");
+    const btnNotToday = document.getElementById("btnNotToday");
 
-    // ===== 表示制御（モック）=====
-    // ・当日判定：?day=today で当日扱い
-    // ・チェックイン済み：localStorage "miniapp_checkin_done" があればチェックイン済み扱い
-    (function(){
-      const params = new URLSearchParams(location.search);
-      const isTodayDemo = params.get("day") === "today";
+    const checkinItem = document.getElementById("checkinItem");
+    const checkinNote = document.getElementById("checkinNote");
+    const checkinTag  = document.getElementById("checkinTag");
 
-      const checkinItem = document.getElementById("checkinItem");
-      const checkinNote = document.getElementById("checkinNote");
-      const checkinTag  = document.getElementById("checkinTag");
+    const orderItem = document.getElementById("orderItem");
+    const orderNote = document.getElementById("orderNote");
+    const mapItem   = document.getElementById("mapItem");
+    const mapNote   = document.getElementById("mapNote");
 
-      const orderItem = document.getElementById("orderItem");
-      const orderNote = document.getElementById("orderNote");
-      const mapItem   = document.getElementById("mapItem");
-      const mapNote   = document.getElementById("mapNote");
-
-      // 当日以外：チェックインは非活性＋注記
-      if(isTodayDemo){
-        checkinItem.classList.remove("disabled");
-        checkinItem.style.pointerEvents = "";
-        checkinNote.style.display = "none";
-      } else {
-        checkinItem.classList.add("disabled");
-        checkinItem.style.pointerEvents = "none";
-        checkinNote.style.display = "";
+    function isCheckedIn(){
+      try{
+        return !!JSON.parse(localStorage.getItem(CHECKIN_KEY));
+      }catch{
+        return false;
       }
+    }
 
-      // チェックイン済みかどうか
-      let checkedIn = false;
-      const raw = localStorage.getItem("miniapp_checkin_done");
-      if(raw){
-        try{
-          JSON.parse(raw);
-          checkedIn = true;
-        }catch{}
+    function render(mode){
+      const today = mode === "today";
+      const checkedIn = isCheckedIn();
+
+      btnToday.classList.toggle("active", today);
+      btnNotToday.classList.toggle("active", !today);
+
+      if(today){
+        checkinItem.classList.remove("disabled");
+        checkinNote.style.display = "none";
+      }else{
+        checkinItem.classList.add("disabled");
+        checkinNote.style.display = "";
       }
 
       if(checkedIn){
         checkinTag.style.display = "";
         document.getElementById("checkinSub").textContent = "当日QRの確認";
+      }else{
+        checkinTag.style.display = "none";
+        document.getElementById("checkinSub").textContent = "当日の受付";
+      }
 
-        // オーダー/館内マップ：チェックイン後は活性
+      if(today && checkedIn){
         orderItem.classList.remove("disabled");
-        orderItem.style.pointerEvents = "";
-        orderNote.style.display = "none";
-
         mapItem.classList.remove("disabled");
-        mapItem.style.pointerEvents = "";
+        orderNote.style.display = "none";
         mapNote.style.display = "none";
-      } else {
-        // オーダー/館内マップ：チェックイン前は非活性＋注記
+      }else{
         orderItem.classList.add("disabled");
-        orderItem.style.pointerEvents = "none";
-        orderNote.style.display = "";
-
         mapItem.classList.add("disabled");
-        mapItem.style.pointerEvents = "none";
+        orderNote.style.display = "";
         mapNote.style.display = "";
       }
-    })();
+    }
+
+    const saved = localStorage.getItem(DAY_KEY) || "not_today";
+    render(saved);
+
+    btnToday.onclick = () => {
+      localStorage.setItem(DAY_KEY,"today");
+      render("today");
+    };
+    btnNotToday.onclick = () => {
+      localStorage.setItem(DAY_KEY,"not_today");
+      render("not_today");
+    };
   </script>
 </body>
 </html>
