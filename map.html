@@ -1,1 +1,208 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>マップ | 葬儀ミニアプリ</title>
+  <style>
+    :root{
+      --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --shadow: 0 10px 28px rgba(17,24,39,.08);
+      --radius:18px; --primary:#111827;
+      --ok:#16a34a; --warn:#b45309;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;
+      background:linear-gradient(180deg,#fff 0%, #fafafa 100%);color:var(--text);}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter: blur(10px);border-bottom:1px solid var(--line);}
+    .topbar-inner{max-width:980px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+    .badge{font-weight:900;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff}
+    .title{margin:0;font-size:18px;font-weight:900}
+    .sub{margin:0;font-size:12px;color:var(--muted)}
+    .spacer{flex:1}
+    .wrap{max-width:980px;margin:0 auto;padding:18px 16px 28px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:860px){ .grid.main{grid-template-columns: 1.4fr .9fr; align-items:start;} }
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .card h2{margin:0 0 10px;font-size:18px;font-weight:900}
+    .btn{
+      appearance:none;border:0;cursor:pointer;border-radius:16px;
+      padding:16px 16px;font-weight:900;font-size:18px;line-height:1;
+      width:100%;min-height:54px;text-align:center;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:var(--shadow);background:var(--primary);color:#fff;
+      transition:transform .06s ease;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:none;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:14px}
+    .pill.ok{border-color:#bbf7d0;background:#f0fdf4}
+    .pill.warn{border-color:#fed7aa;background:#fff7ed}
+    .mapBox{
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .mapBox svg{width:100%;height:auto;display:block}
+    .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+    .kv{display:grid;grid-template-columns:1fr;gap:10px}
+    .item{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+    .k{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px}
+    .v{font-size:16px;font-weight:900}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="badge">葬儀ミニアプリ</div>
+      <div>
+        <p class="title">マップ</p>
+        <p class="sub">館内案内（デモ）</p>
+      </div>
+      <div class="spacer"></div>
+      <a class="btn secondary" href="./index.html" style="width:auto; padding:12px 14px; min-height:44px;">ホーム</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid main">
+      <div class="card">
+        <h2>館内図</h2>
+        <div class="mapBox">
+          <svg viewBox="0 0 900 520" role="img" aria-label="map">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff"/>
+                <stop offset="1" stop-color="#f9fafb"/>
+              </linearGradient>
+            </defs>
+
+            <rect x="0" y="0" width="900" height="520" fill="url(#g)"/>
+
+            <!-- 部屋 -->
+            <g fill="#fff" stroke="#e5e7eb" stroke-width="2">
+              <rect x="40" y="40" width="250" height="180" rx="18"/>
+              <rect x="320" y="40" width="540" height="110" rx="18"/>
+              <rect x="320" y="170" width="260" height="160" rx="18"/>
+              <rect x="600" y="170" width="260" height="160" rx="18"/>
+              <rect x="40" y="250" width="250" height="240" rx="18"/>
+              <rect x="320" y="350" width="540" height="140" rx="18"/>
+            </g>
+
+            <!-- ラベル -->
+            <g fill="#111827" font-family="system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP" font-weight="900">
+              <text x="70" y="90" font-size="22">入口</text>
+              <text x="350" y="95" font-size="22">受付</text>
+              <text x="350" y="230" font-size="22">休憩室</text>
+              <text x="630" y="230" font-size="22">コーヒーラウンジ</text>
+              <text x="70" y="320" font-size="22">売店</text>
+              <text x="350" y="415" font-size="22">式場・通路</text>
+            </g>
+
+            <!-- ルート（切替） -->
+            <path id="route"
+              d="M 160 130 C 260 130, 300 110, 430 95 S 650 95, 760 105"
+              fill="none" stroke="#111827" stroke-width="10" stroke-linecap="round" opacity="0.12"/>
+
+            <path id="routeActive"
+              d="M 160 130 C 260 130, 300 110, 430 95 S 650 95, 760 105"
+              fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 10" opacity="0"/>
+
+            <!-- 現在地 -->
+            <g id="you" opacity="0">
+              <circle cx="160" cy="130" r="14" fill="#111827"/>
+              <circle cx="160" cy="130" r="26" fill="#111827" opacity="0.12"/>
+              <text x="160" y="175" text-anchor="middle" font-size="16" fill="#111827" font-weight="900">現在地</text>
+            </g>
+
+            <text x="450" y="505" text-anchor="middle" font-size="12" fill="#6b7280" font-weight="800">
+              ※デモの館内図です（実図に差し替え）
+            </text>
+          </svg>
+        </div>
+
+        <div class="grid" style="margin-top:12px;">
+          <button class="btn" id="locBtn">現在地を確認（端末）</button>
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="btn secondary" id="toShop">売店へ</button>
+            <button class="btn secondary" id="toLounge">ラウンジへ</button>
+          </div>
+        </div>
+
+        <p class="hint">※実装時は「静的画像」「ルート表示」「現在地（任意）」など方針に合わせて調整します。</p>
+      </div>
+
+      <div class="card">
+        <h2>案内</h2>
+
+        <div class="kv">
+          <div class="item">
+            <div class="k">案内先</div>
+            <div class="v" id="dest">受付（初期）</div>
+          </div>
+          <div class="item">
+            <div class="k">端末の位置情報</div>
+            <div class="v mono" id="geo">未取得</div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:12px;">
+          <a class="btn secondary" href="./checkin.html">チェックインへ</a>
+          <a class="btn secondary" href="./order.html">オーダーへ</a>
+          <a class="btn secondary" href="./reservation.html">予約情報へ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const destEl = document.getElementById("dest");
+    const geoEl = document.getElementById("geo");
+
+    const routeActive = document.getElementById("routeActive");
+    const you = document.getElementById("you");
+
+    function showRoute(name){
+      destEl.textContent = name;
+      routeActive.style.opacity = "1";
+      // 目的地に応じてルートを変える（デモで2パターン）
+      if(name === "売店"){
+        routeActive.setAttribute("d","M 430 95 C 320 150, 260 220, 160 320");
+      }else if(name === "ラウンジ"){
+        routeActive.setAttribute("d","M 430 95 S 650 95, 730 230");
+      }else{
+        routeActive.setAttribute("d","M 160 130 C 260 130, 300 110, 430 95 S 650 95, 760 105");
+      }
+    }
+
+    document.getElementById("toShop").addEventListener("click", ()=>showRoute("売店"));
+    document.getElementById("toLounge").addEventListener("click", ()=>showRoute("ラウンジ"));
+
+    document.getElementById("locBtn").addEventListener("click", ()=>{
+      if(!navigator.geolocation){
+        alert("この端末では位置情報が使えません。");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          geoEl.textContent = `${lat}, ${lng}`;
+          you.style.opacity = "1"; // デモ：館内図に「現在地」を表示するだけ
+          alert("位置情報を取得しました（デモ）。");
+        },
+        ()=>{
+          alert("位置情報の取得に失敗しました。");
+        },
+        { enableHighAccuracy:false, timeout:8000, maximumAge:0 }
+      );
+    });
+
+    // 初期：受付ルート
+    showRoute("受付");
+  </script>
+</body>
+</html>
 
