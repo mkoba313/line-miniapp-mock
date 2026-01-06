@@ -1,1 +1,298 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>予約情報 | 葬儀ミニアプリ</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --card:#ffffff;
+      --shadow: 0 10px 28px rgba(17,24,39,.08);
+      --radius: 18px;
+      --primary:#111827;
+      --primary2:#374151;
+      --ok:#16a34a;
+      --warn:#b45309;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: linear-gradient(180deg,#fff 0%, #fafafa 100%);
+      color:var(--text);
+    }
+    .wrap{max-width:860px;margin:0 auto;padding:18px 16px 28px}
+    .topbar{
+      position:sticky;top:0;z-index:10;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+    .badge{
+      font-weight:800;letter-spacing:.02em;
+      padding:8px 12px;border:1px solid var(--line);
+      border-radius:999px;background:#fff;
+    }
+    .title{
+      font-size:18px;font-weight:900;line-height:1.1;
+      margin:0;
+    }
+    .sub{font-size:12px;color:var(--muted);margin:0}
+    .spacer{flex:1}
+    .btn{
+      appearance:none;border:0;cursor:pointer;
+      border-radius: 16px;
+      padding:16px 16px;
+      font-weight:900;
+      font-size:18px;
+      line-height:1;
+      width:100%;
+      box-shadow: var(--shadow);
+      background: var(--primary);
+      color:#fff;
+      transition: transform .06s ease;
+      text-align:center;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:54px;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{
+      background:#fff;color:var(--text);
+      border:1px solid var(--line);
+      box-shadow:none;
+      font-weight:800;
+    }
+    .row{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+    @media (min-width:720px){ .row.two{grid-template-columns:1fr 1fr} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.01em;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    .kv .item{
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding:12px;
+      background:#fff;
+    }
+    .k{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px}
+    .v{font-size:18px;font-weight:900}
+    .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-weight:900;
+      font-size:14px;
+    }
+    .pill.ok{border-color:#bbf7d0;background:#f0fdf4}
+    .pill.warn{border-color:#fed7aa;background:#fff7ed}
+    .actions{display:grid;gap:10px;margin-top:12px}
+    .footer-nav{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media (min-width:720px){ .footer-nav{grid-template-columns:1fr 1fr} }
+    .small{font-size:12px;color:var(--muted)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <div class="badge">葬儀ミニアプリ</div>
+      </div>
+      <div>
+        <p class="title">予約情報</p>
+        <p class="sub">予約の確認（デモ）</p>
+      </div>
+      <div class="spacer"></div>
+      <a class="btn secondary" href="./index.html" style="width:auto; padding:12px 14px; min-height:44px;">ホーム</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="row two">
+      <div class="card">
+        <h2>状態</h2>
+        <div id="statusPill" class="pill warn">未取得</div>
+        <p class="hint">「予約を読み込む」を押すと、デモの予約情報を表示します。</p>
+        <div class="actions">
+          <button class="btn" id="loadBtn">予約を読み込む</button>
+          <button class="btn secondary" id="resetBtn">この端末の表示を初期化</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>利用者（参考）</h2>
+        <div class="kv">
+          <div class="item">
+            <div class="k">LINE表示名（LIFF内なら取得）</div>
+            <div class="v" id="lineName">—</div>
+          </div>
+          <div class="item">
+            <div class="k">ユーザーID（LIFF内なら取得）</div>
+            <div class="v mono" id="lineUid">—</div>
+          </div>
+        </div>
+        <p class="hint">ローカル表示だけ。サーバー連携は未実装です。</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h2>予約詳細</h2>
+        <div class="kv" id="details">
+          <div class="item"><div class="k">予約番号</div><div class="v">—</div></div>
+          <div class="item"><div class="k">日付</div><div class="v">—</div></div>
+          <div class="item"><div class="k">時間</div><div class="v">—</div></div>
+          <div class="item"><div class="k">斎場</div><div class="v">—</div></div>
+          <div class="item"><div class="k">申込者</div><div class="v">—</div></div>
+          <div class="item"><div class="k">電話番号</div><div class="v">—</div></div>
+        </div>
+
+        <div class="footer-nav">
+          <a class="btn secondary" href="./checkin.html">チェックインへ</a>
+          <a class="btn secondary" href="./order.html">オーダーへ</a>
+        </div>
+
+        <p class="small" style="margin-top:10px;">
+          ※この画面はデモです。実データ連携が入る場合は「予約照会API」で置き換えます。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== LIFF（あれば） ======
+    async function tryInitLiff(){
+      // liff sdk を読み込んでいない場合もあるのでガード
+      if(!window.liff) return;
+
+      // liffIdは本番で差し替え（ここはダミー）
+      const liffId = window.LIFF_ID || "YOUR_LIFF_ID";
+      try{
+        await liff.init({ liffId });
+        if(!liff.isLoggedIn()){
+          // ミニアプリ/LIFF環境で未ログインならログインへ（デモでは何もしない）
+          // liff.login();
+        }else{
+          const profile = await liff.getProfile();
+          document.getElementById("lineName").textContent = profile.displayName || "—";
+          document.getElementById("lineUid").textContent = profile.userId || "—";
+        }
+      }catch(e){
+        // デモ：失敗しても落とさない
+        console.log("LIFF init skipped:", e);
+      }
+    }
+
+    // ====== デモデータ（ローカル） ======
+    const LS_KEY = "miniapp_reservation_demo";
+
+    function setStatus(type, text){
+      const el = document.getElementById("statusPill");
+      el.className = "pill " + (type || "");
+      el.textContent = text;
+    }
+
+    function renderReservation(r){
+      const details = document.getElementById("details");
+      details.innerHTML = "";
+
+      const items = [
+        ["予約番号", r.reservationNo],
+        ["日付", r.date],
+        ["時間", r.time],
+        ["斎場", r.hall],
+        ["申込者", r.applicantName],
+        ["電話番号", r.phone]
+      ];
+
+      for(const [k,v] of items){
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
+        details.appendChild(div);
+      }
+    }
+
+    function loadLocal(){
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw){
+        setStatus("warn", "未取得");
+        return;
+      }
+      try{
+        const r = JSON.parse(raw);
+        renderReservation(r);
+        setStatus("ok", "取得済み");
+      }catch{
+        setStatus("warn", "未取得");
+      }
+    }
+
+    function createDemoReservation(){
+      // 実装時は「予約照会API」に置換
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth()+1).padStart(2,"0");
+      const dd = String(today.getDate()).padStart(2,"0");
+      const demo = {
+        reservationNo: "R-" + yyyy + mm + dd + "-001",
+        date: `${yyyy}/${mm}/${dd}`,
+        time: "10:30",
+        hall: "○○斎場（デモ）",
+        applicantName: "山田 太郎",
+        phone: "090-1234-5678"
+      };
+      localStorage.setItem(LS_KEY, JSON.stringify(demo));
+      return demo;
+    }
+
+    document.getElementById("loadBtn").addEventListener("click", ()=>{
+      const r = createDemoReservation();
+      renderReservation(r);
+      setStatus("ok", "取得済み");
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", ()=>{
+      localStorage.removeItem(LS_KEY);
+      loadLocal();
+      alert("この端末の予約表示を初期化しました。");
+    });
+
+    // 初期表示
+    loadLocal();
+    tryInitLiff();
+  </script>
+</body>
+</html>
 
