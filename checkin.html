@@ -1,1 +1,217 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>チェックイン | 葬儀ミニアプリ</title>
+  <style>
+    :root{
+      --bg:#ffffff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --shadow: 0 10px 28px rgba(17,24,39,.08);
+      --radius:18px; --primary:#111827; --ok:#16a34a; --warn:#b45309;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP",sans-serif;
+      background:linear-gradient(180deg,#fff 0%, #fafafa 100%);color:var(--text);}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter: blur(10px);border-bottom:1px solid var(--line);}
+    .topbar-inner{max-width:860px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+    .badge{font-weight:900;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff}
+    .title{margin:0;font-size:18px;font-weight:900}
+    .sub{margin:0;font-size:12px;color:var(--muted)}
+    .spacer{flex:1}
+    .wrap{max-width:860px;margin:0 auto;padding:18px 16px 28px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .card h2{margin:0 0 10px;font-size:18px;font-weight:900}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:900;font-size:14px}
+    .pill.ok{border-color:#bbf7d0;background:#f0fdf4}
+    .pill.warn{border-color:#fed7aa;background:#fff7ed}
+    .btn{
+      appearance:none;border:0;cursor:pointer;border-radius:16px;
+      padding:16px 16px;font-weight:900;font-size:18px;line-height:1;
+      width:100%;min-height:54px;text-align:center;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:var(--shadow);background:var(--primary);color:#fff;
+      transition:transform .06s ease;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:none;font-weight:800}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
+    @media (min-width:720px){ .grid.two{grid-template-columns:1fr 1fr} }
+    .kv{display:grid;grid-template-columns:1fr;gap:10px}
+    .item{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+    .k{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px}
+    .v{font-size:18px;font-weight:900}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    .qr{
+      width:100%; aspect-ratio:1/1;
+      border-radius:16px; border:1px dashed #d1d5db;
+      display:grid; place-items:center;
+      background: radial-gradient(circle at 20% 20%, #fff 0%, #f9fafb 40%, #fff 100%);
+      overflow:hidden;
+    }
+    .qr svg{width:88%;height:88%}
+    .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="badge">葬儀ミニアプリ</div>
+      <div>
+        <p class="title">チェックイン</p>
+        <p class="sub">当日の受付（デモ）</p>
+      </div>
+      <div class="spacer"></div>
+      <a class="btn secondary" href="./index.html" style="width:auto; padding:12px 14px; min-height:44px;">ホーム</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid two">
+      <div class="card">
+        <h2>状態</h2>
+        <div id="statusPill" class="pill warn">未チェックイン</div>
+
+        <div class="grid" style="margin-top:12px;">
+          <button class="btn" id="checkinBtn">チェックインする</button>
+          <button class="btn secondary" id="scanBtn">QRを読み取る（可能なら）</button>
+          <button class="btn secondary" id="resetBtn">この端末のチェックインを初期化</button>
+        </div>
+
+        <p class="hint">
+          ※実装時は「予約照会→チェックイン登録」など基盤連携に置き換えます。
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>受付情報</h2>
+        <div class="kv">
+          <div class="item">
+            <div class="k">チェックイン時刻</div>
+            <div class="v" id="checkedAt">—</div>
+          </div>
+          <div class="item">
+            <div class="k">受付番号（デモ）</div>
+            <div class="v mono" id="ticketNo">—</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="k" style="margin:0 0 8px;">当日QR（表示だけ）</div>
+          <div class="qr" id="qrBox" aria-label="QR placeholder">
+            <svg viewBox="0 0 100 100" role="img" aria-label="QR">
+              <rect x="0" y="0" width="100" height="100" fill="white"/>
+              <!-- 疑似QRパターン -->
+              <g fill="#111827">
+                <rect x="8" y="8" width="26" height="26" rx="3"/>
+                <rect x="66" y="8" width="26" height="26" rx="3"/>
+                <rect x="8" y="66" width="26" height="26" rx="3"/>
+                <rect x="13" y="13" width="16" height="16" fill="white" rx="2"/>
+                <rect x="71" y="13" width="16" height="16" fill="white" rx="2"/>
+                <rect x="13" y="71" width="16" height="16" fill="white" rx="2"/>
+                <rect x="17" y="17" width="8" height="8" rx="1"/>
+                <rect x="75" y="17" width="8" height="8" rx="1"/>
+                <rect x="17" y="75" width="8" height="8" rx="1"/>
+                <!-- 中央ブロック -->
+                <rect x="40" y="40" width="6" height="6"/>
+                <rect x="48" y="40" width="6" height="6"/>
+                <rect x="56" y="40" width="6" height="6"/>
+                <rect x="40" y="48" width="6" height="6"/>
+                <rect x="52" y="48" width="6" height="6"/>
+                <rect x="60" y="48" width="6" height="6"/>
+                <rect x="40" y="56" width="6" height="6"/>
+                <rect x="48" y="56" width="6" height="6"/>
+                <rect x="56" y="56" width="6" height="6"/>
+              </g>
+              <text x="50" y="97" text-anchor="middle" font-size="7" fill="#6b7280">DEMO</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>次にできること</h2>
+        <div class="grid two" style="margin-top:12px;">
+          <a class="btn secondary" href="./map.html">マップを見る</a>
+          <a class="btn secondary" href="./order.html">オーダーへ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LS_KEY = "miniapp_checkin_demo";
+
+    function setStatus(type, text){
+      const el = document.getElementById("statusPill");
+      el.className = "pill " + (type || "");
+      el.textContent = text;
+    }
+
+    function load(){
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw){
+        setStatus("warn","未チェックイン");
+        document.getElementById("checkedAt").textContent = "—";
+        document.getElementById("ticketNo").textContent = "—";
+        return;
+      }
+      try{
+        const data = JSON.parse(raw);
+        setStatus("ok","チェックイン済み");
+        document.getElementById("checkedAt").textContent = data.checkedAt;
+        document.getElementById("ticketNo").textContent = data.ticketNo;
+      }catch{
+        setStatus("warn","未チェックイン");
+      }
+    }
+
+    function doCheckin(sourceLabel){
+      const now = new Date();
+      const pad = (n)=> String(n).padStart(2,"0");
+      const ts = `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const ticketNo = "C-" + now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) + "-" + pad(now.getHours()) + pad(now.getMinutes());
+      localStorage.setItem(LS_KEY, JSON.stringify({ checkedAt: ts, ticketNo, source: sourceLabel }));
+      load();
+      alert("チェックインしました（デモ）。");
+    }
+
+    document.getElementById("checkinBtn").addEventListener("click", ()=>doCheckin("manual"));
+
+    document.getElementById("resetBtn").addEventListener("click", ()=>{
+      localStorage.removeItem(LS_KEY);
+      load();
+      alert("この端末のチェックイン表示を初期化しました。");
+    });
+
+    document.getElementById("scanBtn").addEventListener("click", async ()=>{
+      // 可能なら LIFFのscan（環境によりAPI名が違う場合があるので段階的に確認）
+      if(!window.liff){
+        alert("この環境ではQR読取（LIFF）が使えません。");
+        return;
+      }
+      try{
+        // liff.scanCodeV2 があれば使う
+        if(typeof liff.scanCodeV2 === "function"){
+          const res = await liff.scanCodeV2();
+          // res.value に読み取った内容
+          doCheckin("scan:" + (res && res.value ? res.value.slice(0,24) : "unknown"));
+        }else if(typeof liff.scanCode === "function"){
+          const res = await liff.scanCode();
+          doCheckin("scan:" + (res ? String(res).slice(0,24) : "unknown"));
+        }else{
+          alert("このLIFFではQR読取が有効化されていません。");
+        }
+      }catch(e){
+        console.log(e);
+        alert("QR読取に失敗しました（デモ）。");
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>
 
