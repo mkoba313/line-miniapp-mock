@@ -210,7 +210,7 @@
       box-shadow: 0 0 0 5px rgba(22,163,74,.12);
     }
 
-    /* 当日以外の注記 */
+    /* 注記（当日以外 / チェックイン後表示など） */
     .note-checkin{
       margin-top: 4px;
       font-size: 12px;
@@ -294,25 +294,31 @@
             <div class="chev">›</div>
           </a>
 
-          <!-- 売店・注文 -->
-          <a class="item" href="./order.html" aria-label="売店・注文へ">
+          <!-- オーダー（チェックイン後に表示される想定：モックでは非活性＋注記） -->
+          <a class="item" id="orderItem" href="./order.html" aria-label="オーダーへ">
             <div class="left">
               <div class="icon">🛒</div>
               <div class="text">
-                <div class="label">売店・注文</div>
-                <div class="sub">売店／ラウンジ</div>
+                <div class="label">オーダー</div>
+                <div class="sub">売店</div>
+                <div class="note-checkin" id="orderNote" style="display:none;">
+                  ※チェックイン後に表示されます
+                </div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
-          <!-- 館内案内 -->
-          <a class="item" href="./map.html" aria-label="館内案内へ">
+          <!-- 館内マップ（チェックイン後に表示される想定：モックでは非活性＋注記） -->
+          <a class="item" id="mapItem" href="./map.html" aria-label="館内案内へ">
             <div class="left">
               <div class="icon">🗺️</div>
               <div class="text">
-                <div class="label">館内案内</div>
+                <div class="label">館内マップ</div>
                 <div class="sub">地図／導線</div>
+                <div class="note-checkin" id="mapNote" style="display:none;">
+                  ※チェックイン後に表示されます
+                </div>
               </div>
             </div>
             <div class="chev">›</div>
@@ -343,9 +349,9 @@
       document.getElementById("openIn").textContent = inLine ? "LINE" : "WebView";
     })();
 
-    // ===== チェックインの表示制御（モック）=====
-    // 本番は「予約日時」や「当日判定API」等で制御する想定
-    // モックでは URL パラメータで切替： ?day=today で当日扱い
+    // ===== 表示制御（モック）=====
+    // ・当日判定：?day=today で当日扱い
+    // ・チェックイン済み：localStorage "miniapp_checkin_done" があればチェックイン済み扱い
     (function(){
       const params = new URLSearchParams(location.search);
       const isTodayDemo = params.get("day") === "today";
@@ -354,7 +360,12 @@
       const checkinNote = document.getElementById("checkinNote");
       const checkinTag  = document.getElementById("checkinTag");
 
-      // 当日以外：非活性＋注記
+      const orderItem = document.getElementById("orderItem");
+      const orderNote = document.getElementById("orderNote");
+      const mapItem   = document.getElementById("mapItem");
+      const mapNote   = document.getElementById("mapNote");
+
+      // 当日以外：チェックインは非活性＋注記
       if(isTodayDemo){
         checkinItem.classList.remove("disabled");
         checkinItem.style.pointerEvents = "";
@@ -365,14 +376,37 @@
         checkinNote.style.display = "";
       }
 
-      // チェックイン済み表示（checkin.htmlが保存するlocalStorageに連動）
+      // チェックイン済みかどうか
+      let checkedIn = false;
       const raw = localStorage.getItem("miniapp_checkin_done");
       if(raw){
         try{
           JSON.parse(raw);
-          checkinTag.style.display = "";
-          document.getElementById("checkinSub").textContent = "当日QRの確認";
+          checkedIn = true;
         }catch{}
+      }
+
+      if(checkedIn){
+        checkinTag.style.display = "";
+        document.getElementById("checkinSub").textContent = "当日QRの確認";
+
+        // オーダー/館内マップ：チェックイン後は活性
+        orderItem.classList.remove("disabled");
+        orderItem.style.pointerEvents = "";
+        orderNote.style.display = "none";
+
+        mapItem.classList.remove("disabled");
+        mapItem.style.pointerEvents = "";
+        mapNote.style.display = "none";
+      } else {
+        // オーダー/館内マップ：チェックイン前は非活性＋注記
+        orderItem.classList.add("disabled");
+        orderItem.style.pointerEvents = "none";
+        orderNote.style.display = "";
+
+        mapItem.classList.add("disabled");
+        mapItem.style.pointerEvents = "none";
+        mapNote.style.display = "";
       }
     })();
   </script>
