@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>売店・注文</title>
+  <title>オーダー</title>
 
   <style>
     :root{
@@ -37,18 +37,19 @@
       color: var(--text);
     }
 
-    /* ===== 共通ヘッダー（左なし／中央タイトル／右ホーム） ===== */
+    /* ===== 共通ヘッダー（左なし／中央タイトル／右ホーム＋トグル） ===== */
     .header{
       height:64px;
       display:grid;
       grid-template-columns: 1fr auto 1fr;
       align-items:center;
       border-bottom:1px solid var(--line);
-      padding:0 16px;
+      padding:0 12px;
       background:#fff;
       position:sticky;
       top:0;
       z-index:10;
+      gap:8px;
     }
     .header-title{
       grid-column:2;
@@ -57,13 +58,40 @@
       text-align:center;
       letter-spacing:.02em;
     }
-    .header-home{
+    .header-right{
       grid-column:3;
       justify-self:end;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .header-home{
       font-size:18px;
       font-weight:900;
       text-decoration:none;
       color: var(--blue);
+      white-space:nowrap;
+    }
+
+    /* 役割トグル（喪主／同行者） */
+    .role-switch{
+      display:flex;
+      gap:4px;
+    }
+    .role-switch button{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:6px 10px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .role-switch button.active{
+      background: var(--primary);
+      color:#fff;
+      border-color: var(--primary);
     }
 
     .wrap{
@@ -105,28 +133,6 @@
       padding:8px 10px;
       border-radius:999px;
       white-space:nowrap;
-    }
-
-    /* タブ */
-    .tabs{
-      display:flex;
-      gap:10px;
-      padding:12px 12px 0;
-    }
-    .tab{
-      flex:1;
-      border:1px solid var(--line);
-      border-radius:14px;
-      height:48px;
-      font-size:16px;
-      font-weight:900;
-      background:#fff;
-      cursor:pointer;
-    }
-    .tab.active{
-      background: var(--primary);
-      color:#fff;
-      border-color: var(--primary);
     }
 
     /* 商品リスト */
@@ -304,12 +310,63 @@
       box-shadow:none;
     }
 
-    .note{
-      padding:12px 16px;
+    /* ===== 精算 ===== */
+    .pay{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .payBox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .payRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      font-weight:900;
+    }
+    .payRow .label{
+      font-size:14px;
+      color: var(--muted);
+      font-weight:900;
+    }
+    .payRow .value{
+      font-size:20px;
+      color: var(--text);
+      font-weight:900;
+    }
+    .qrWrap{
+      display:flex;
+      justify-content:center;
+      padding:10px 0 2px;
+    }
+    .qr{
+      width:220px;
+      height:220px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      box-shadow: 0 10px 28px rgba(17,24,39,.06);
+    }
+    .qr svg{ width:200px; height:200px; display:block; }
+
+    .smallNote{
+      padding:10px 16px 14px;
       font-size:12px;
-      color:var(--muted);
+      color: var(--muted);
       font-weight:800;
       line-height:1.4;
+      text-align:center;
     }
   </style>
 </head>
@@ -317,8 +374,15 @@
 <body>
   <header class="header">
     <div></div>
-    <div class="header-title">売店・注文</div>
-    <a class="header-home" href="./index.html">ホーム</a>
+    <div class="header-title">オーダー</div>
+
+    <div class="header-right">
+      <div class="role-switch" aria-label="表示切替">
+        <button id="btnHost" type="button">喪主</button>
+        <button id="btnGuest" type="button">同行者</button>
+      </div>
+      <a class="header-home" href="./index.html">ホーム</a>
+    </div>
   </header>
 
   <div class="wrap">
@@ -327,20 +391,9 @@
     <section class="card">
       <div class="card-hd">
         <div class="h">商品</div>
-        <div class="pill" id="placePill">売店</div>
+        <div class="pill">売店</div>
       </div>
-
-      <div class="tabs" role="tablist" aria-label="売店・ラウンジ切替">
-        <button class="tab active" id="tabShop" type="button">売店</button>
-        <button class="tab" id="tabLounge" type="button">ラウンジ</button>
-      </div>
-
       <div class="list" id="productList"></div>
-
-      <div class="note">
-        ※モックのため、注文はデモ表示です。<br>
-        ※喪主/同行者の表示・切替は行いません（要件どおり削除）。
-      </div>
     </section>
 
     <!-- カート -->
@@ -362,54 +415,87 @@
         <button class="btn secondary" id="saveBtn" disabled>注文内容を保存</button>
         <button class="btn danger" id="clearBtn" disabled>カートを空にする</button>
       </div>
+
+      <!-- 精算（喪主のみ表示） -->
+      <div id="paySection">
+        <div class="card-hd" style="border-top:1px solid var(--line);">
+          <div class="h">精算</div>
+          <div class="pill">喪主のみ</div>
+        </div>
+
+        <div class="pay">
+          <div class="payBox">
+            <div class="payRow">
+              <div class="label">精算金額</div>
+              <div class="value" id="payTotal">¥0</div>
+            </div>
+
+            <div class="qrWrap">
+              <div class="qr" aria-label="精算QRコード">
+                <div id="qrHost"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="smallNote">※喪主の画面のみ表示されます</div>
+      </div>
+
+      <!-- 同行者のときだけ見せる注記（精算が無い理由を明示） -->
+      <div class="smallNote" id="guestNote" style="display:none;">
+        ※喪主の画面のみ表示されます
+      </div>
+
     </section>
 
   </div>
 
   <script>
-    // ===== デモデータ =====
-    const PRODUCTS = {
-      shop: [
-        { id:"s1", name:"お茶（ペットボトル）", price:160 },
-        { id:"s2", name:"水（ペットボトル）", price:120 },
-        { id:"s3", name:"おしぼり", price:80 },
-        { id:"s4", name:"のど飴", price:150 },
-        { id:"s5", name:"ハンカチ", price:300 },
-      ],
-      lounge: [
-        { id:"l1", name:"コーヒー", price:350 },
-        { id:"l2", name:"紅茶", price:350 },
-        { id:"l3", name:"軽食（サンド）", price:650 },
-        { id:"l4", name:"おにぎり", price:280 },
-        { id:"l5", name:"ケーキ", price:520 },
-      ]
-    };
+    // ===== デモ商品（売店のみ） =====
+    const PRODUCTS = [
+      { id:"s1", name:"お茶（ペットボトル）", price:160 },
+      { id:"s2", name:"水（ペットボトル）", price:120 },
+      { id:"s3", name:"おしぼり", price:80 },
+      { id:"s4", name:"のど飴", price:150 },
+      { id:"s5", name:"ハンカチ", price:300 },
+    ];
 
-    // ===== 状態 =====
-    const LS_KEY = "miniapp_cart";
-    let place = "shop"; // shop / lounge
-    let cart = loadCart(); // {id: qty}
+    // ===== ローカルストレージ =====
+    const LS_CART = "miniapp_cart";
+    const LS_ROLE = "miniapp_role"; // "host" | "guest"
+
+    // デフォルトは喪主
+    if(!localStorage.getItem(LS_ROLE)){
+      localStorage.setItem(LS_ROLE, "host");
+    }
 
     // ===== 要素 =====
     const listEl = document.getElementById("productList");
     const cartEl = document.getElementById("cart");
     const totalEl = document.getElementById("total");
     const countPill = document.getElementById("countPill");
-    const placePill = document.getElementById("placePill");
-
-    const tabShop = document.getElementById("tabShop");
-    const tabLounge = document.getElementById("tabLounge");
 
     const orderBtn = document.getElementById("orderBtn");
     const saveBtn = document.getElementById("saveBtn");
     const clearBtn = document.getElementById("clearBtn");
 
-    // ===== ユーティリティ =====
+    const paySection = document.getElementById("paySection");
+    const guestNote = document.getElementById("guestNote");
+    const payTotalEl = document.getElementById("payTotal");
+    const qrHost = document.getElementById("qrHost");
+
+    const btnHost = document.getElementById("btnHost");
+    const btnGuest = document.getElementById("btnGuest");
+
+    // ===== 状態 =====
+    let cart = loadCart();
+
+    // ===== util =====
     function yen(n){ return "¥" + n.toLocaleString("ja-JP"); }
 
     function loadCart(){
       try{
-        const raw = localStorage.getItem(LS_KEY);
+        const raw = localStorage.getItem(LS_CART);
         if(!raw) return {};
         const obj = JSON.parse(raw);
         return (obj && typeof obj === "object") ? obj : {};
@@ -417,19 +503,9 @@
         return {};
       }
     }
-    function persistCart(){
-      localStorage.setItem(LS_KEY, JSON.stringify(cart));
-    }
-
-    function getAllProducts(){
-      return [...PRODUCTS.shop, ...PRODUCTS.lounge];
-    }
-    function findProduct(id){
-      return getAllProducts().find(p => p.id === id);
-    }
+    function persistCart(){ localStorage.setItem(LS_CART, JSON.stringify(cart)); }
 
     function qtyOf(id){ return cart[id] || 0; }
-
     function setQty(id, qty){
       if(qty <= 0) delete cart[id];
       else cart[id] = qty;
@@ -437,37 +513,111 @@
       render();
     }
 
-    function cartCount(){
-      return Object.values(cart).reduce((a,b)=>a+b,0);
-    }
+    function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
     function cartTotal(){
-      let sum = 0;
+      let sum=0;
       for(const [id, qty] of Object.entries(cart)){
-        const p = findProduct(id);
+        const p = PRODUCTS.find(x=>x.id===id);
         if(p) sum += p.price * qty;
       }
       return sum;
     }
 
-    // ===== 描画 =====
-    function renderProducts(){
-      placePill.textContent = (place === "shop") ? "売店" : "ラウンジ";
-      const items = PRODUCTS[place];
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
 
-      listEl.innerHTML = items.map(p => {
+    // ===== QR（モック：それっぽいSVG） =====
+    function hash(str){
+      let h = 2166136261;
+      for(let i=0;i<str.length;i++){
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h>>>0);
+    }
+    function renderFakeQR(payload){
+      const seed = hash(payload);
+      const size = 21;
+      const cell = 200 / size;
+      let cells = "";
+
+      function rect(x,y){
+        return `<rect x="${x*cell}" y="${y*cell}" width="${cell}" height="${cell}" fill="#111827"/>`;
+      }
+      function on(x,y){
+        const v = (seed + x*31 + y*17 + (x*y)*7) % 11;
+        return v < 5;
+      }
+      function finder(x0,y0){
+        const s=7;
+        for(let y=0;y<s;y++){
+          for(let x=0;x<s;x++){
+            const border = x===0||y===0||x===s-1||y===s-1;
+            const inner  = x>=2&&x<=4&&y>=2&&y<=4;
+            if(border || inner) cells += rect(x0+x, y0+y);
+          }
+        }
+      }
+
+      for(let y=0;y<size;y++){
+        for(let x=0;x<size;x++){
+          const inFinder =
+            (x<7 && y<7) || (x>=size-7 && y<7) || (x<7 && y>=size-7);
+          if(inFinder) continue;
+          if(on(x,y)) cells += rect(x,y);
+        }
+      }
+      finder(0,0); finder(size-7,0); finder(0,size-7);
+
+      return `
+        <svg viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="QR">
+          <rect x="0" y="0" width="200" height="200" fill="#fff"/>
+          ${cells}
+        </svg>
+      `;
+    }
+
+    // ===== role =====
+    function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
+    function setRole(role){
+      localStorage.setItem(LS_ROLE, role);
+      renderRole();
+      renderSettlement();
+    }
+    function renderRole(){
+      const role = getRole();
+      const isHost = role === "host";
+      btnHost.classList.toggle("active", isHost);
+      btnGuest.classList.toggle("active", !isHost);
+
+      // 喪主のみ：精算表示
+      paySection.style.display = isHost ? "" : "none";
+      guestNote.style.display = isHost ? "none" : "";
+    }
+
+    btnHost.addEventListener("click", ()=>setRole("host"));
+    btnGuest.addEventListener("click", ()=>setRole("guest"));
+
+    // ===== render =====
+    function renderProducts(){
+      listEl.innerHTML = PRODUCTS.map(p => {
         const q = qtyOf(p.id);
         return `
           <div class="item">
             <div class="left">
               <div class="name">${escapeHtml(p.name)}</div>
-              <div class="meta">
-                <span class="price">${yen(p.price)}</span>
-              </div>
+              <div class="meta"><span class="price">${yen(p.price)}</span></div>
             </div>
             <div class="right">
               <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
                 <button type="button" data-act="minus" data-id="${p.id}" aria-label="減らす">−</button>
-                <div class="n" aria-label="数量">${q}</div>
+                <div class="n">${q}</div>
                 <button type="button" data-act="plus" data-id="${p.id}" aria-label="増やす">＋</button>
               </div>
             </div>
@@ -475,7 +625,6 @@
         `;
       }).join("");
 
-      // イベント委譲
       listEl.querySelectorAll("button[data-act]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const id = btn.getAttribute("data-id");
@@ -498,12 +647,12 @@
       clearBtn.disabled = !has;
 
       if(!has){
-        cartEl.innerHTML = `<div class="note">カートは空です。</div>`;
+        cartEl.innerHTML = `<div style="padding:12px;color:#6b7280;font-weight:800;">カートは空です。</div>`;
         return;
       }
 
       cartEl.innerHTML = entries.map(([id, qty])=>{
-        const p = findProduct(id);
+        const p = PRODUCTS.find(x=>x.id===id);
         if(!p) return "";
         const subtotal = p.price * qty;
         return `
@@ -541,45 +690,35 @@
       });
     }
 
+    function renderSettlement(){
+      const role = getRole();
+      if(role !== "host") return;
+
+      const total = cartTotal();
+      payTotalEl.textContent = yen(total);
+
+      const payId = `PAY|TOTAL=${total}|DATE=${new Date().toISOString().slice(0,10)}`;
+      qrHost.innerHTML = renderFakeQR(payId);
+    }
+
     function render(){
+      renderRole();
       renderProducts();
       renderCart();
+      renderSettlement();
     }
 
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    // ===== タブ切替 =====
-    tabShop.addEventListener("click", ()=>{
-      place = "shop";
-      tabShop.classList.add("active");
-      tabLounge.classList.remove("active");
-      renderProducts();
-    });
-
-    tabLounge.addEventListener("click", ()=>{
-      place = "lounge";
-      tabLounge.classList.add("active");
-      tabShop.classList.remove("active");
-      renderProducts();
-    });
-
-    // ===== 操作 =====
+    // ===== actions =====
     orderBtn.addEventListener("click", ()=>{
       const total = cartTotal();
       alert(`注文しました（デモ）\n合計：${yen(total)}`);
-      // モックでは注文後にカートを空にしても良いが、運用次第なので保存は維持
+      renderSettlement();
     });
 
     saveBtn.addEventListener("click", ()=>{
       persistCart();
       alert("注文内容を保存しました（デモ）。");
+      renderSettlement();
     });
 
     clearBtn.addEventListener("click", ()=>{
