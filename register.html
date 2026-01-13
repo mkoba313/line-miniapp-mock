@@ -18,6 +18,7 @@
 
       --primary:#111827;
       --blue:#2563eb;
+      --ok:#16a34a;
 
       --max:520px;
 
@@ -61,7 +62,7 @@
       text-align:center;
       letter-spacing:.02em;
     }
-    .rightSpace{ width:40px; } /* 右なしの見た目を揃える */
+    .rightSpace{ width:40px; }
 
     .wrap{
       max-width: var(--max);
@@ -95,6 +96,17 @@
       gap:10px;
     }
 
+    .err{
+      display:none;
+      border:1px solid #fecaca;
+      background:#fff1f2;
+      color:#9f1239;
+      border-radius:14px;
+      padding:12px;
+      font-weight:900;
+      font-size:14px;
+    }
+
     .field{
       border:1px solid var(--line);
       border-radius:14px;
@@ -110,7 +122,7 @@
       color: var(--muted);
       letter-spacing:.04em;
     }
-    input{
+    input[type="text"], input[type="tel"]{
       width:100%;
       border:1px solid var(--line);
       border-radius:12px;
@@ -119,50 +131,36 @@
       font-weight:900;
       outline:none;
     }
-    input:focus{
+    input[type="text"]:focus, input[type="tel"]:focus{
       border-color: rgba(37,99,235,.45);
       box-shadow: 0 0 0 5px rgba(37,99,235,.12);
     }
 
-    .termsBox{
+    /* ===== 規約（アコーディオン） ===== */
+    .termsWrap{
       border:1px solid var(--line);
       border-radius:14px;
-      padding:12px;
       background:#fff;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      overflow:hidden;
     }
-    .termsTitle{
+
+    .termsTop{
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      background: var(--soft);
+    }
+    .termsTopTitle{
       font-size:14px;
       font-weight:900;
       color:#374151;
+      margin-bottom:10px;
     }
-    .linkRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .linkBtn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      height:44px;
-      padding:0 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
-      color: var(--blue);
-      font-weight:900;
-      text-decoration:none;
-      font-size:14px;
-      white-space:nowrap;
-    }
+
     .checkRow{
       display:flex;
       align-items:flex-start;
       gap:10px;
-      padding-top:4px;
+      padding:10px 0 0;
     }
     .checkRow input[type="checkbox"]{
       width:22px;
@@ -174,6 +172,86 @@
       font-weight:900;
       color:#111827;
       line-height:1.4;
+    }
+    .checkHint{
+      font-size:12px;
+      font-weight:800;
+      color: var(--muted);
+      margin-top:4px;
+    }
+
+    details{
+      border-top:1px solid var(--line);
+      background:#fff;
+    }
+    summary{
+      list-style:none;
+      cursor:pointer;
+      padding:14px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-weight:900;
+      font-size:16px;
+    }
+    summary::-webkit-details-marker{ display:none; }
+
+    .badge{
+      font-size:12px;
+      font-weight:900;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color: var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .badge.ok{
+      color: var(--ok);
+      border-color: rgba(22,163,74,.25);
+      background: rgba(22,163,74,.06);
+    }
+
+    .panel{
+      padding:0 12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .termsBox{
+      height: 180px;
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+      line-height:1.5;
+      font-size:14px;
+      font-weight:700;
+      color:#111827;
+    }
+    .termsBox p{ margin:0 0 10px; }
+    .termsBox strong{ font-weight:900; }
+
+    .subAgree{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background:#fff;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      opacity:.55;
+    }
+    .subAgree.enabled{
+      opacity:1;
+    }
+    .subAgree input{
+      width:22px;
+      height:22px;
+      margin-top:2px;
     }
 
     .actions{
@@ -190,9 +268,14 @@
       font-weight:900;
       cursor:pointer;
       box-shadow: var(--shadow);
+      background: var(--primary);
+      color:#fff;
     }
-    .btn.primary{ background: var(--primary); color:#fff; }
-    .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
 
     .note{
       text-align:center;
@@ -201,17 +284,6 @@
       font-weight:800;
       line-height:1.4;
       padding:0 8px 12px;
-    }
-
-    .err{
-      display:none;
-      border:1px solid #fecaca;
-      background:#fff1f2;
-      color:#9f1239;
-      border-radius:14px;
-      padding:12px;
-      font-weight:900;
-      font-size:14px;
     }
   </style>
 </head>
@@ -224,12 +296,11 @@
   </header>
 
   <div class="wrap">
-
     <section class="card">
       <div class="card-hd">火葬申し込み（会員登録）</div>
 
       <div class="body">
-        <div class="err" id="err">未入力の項目があります。</div>
+        <div class="err" id="err">未入力の項目、または同意が未完了です。</div>
 
         <div class="field">
           <div class="k">申込者氏名</div>
@@ -246,34 +317,92 @@
           <input id="addr" type="text" placeholder="例）東京都◯◯区◯◯ 1-2-3" autocomplete="street-address" />
         </div>
 
-        <div class="termsBox">
-          <div class="termsTitle">同意事項</div>
+        <!-- ===== 規約（アコーディオン＋スクロール完了で同意活性化） ===== -->
+        <div class="termsWrap" aria-label="同意事項">
+          <div class="termsTop">
+            <div class="termsTopTitle">同意事項</div>
 
-          <div class="linkRow">
-            <a class="linkBtn" href="./terms.html" target="_blank" rel="noopener">火葬の規約</a>
-            <a class="linkBtn" href="./privacy.html" target="_blank" rel="noopener">個人情報の規約</a>
+            <!-- 全体同意 -->
+            <div class="checkRow">
+              <input id="agreeAll" type="checkbox" />
+              <div>
+                <div class="checkText">すべての規約に同意します</div>
+                <div class="checkHint">※下の規約を開き、最後までスクロールすると個別同意が有効になります</div>
+              </div>
+            </div>
           </div>
 
-          <div class="checkRow">
-            <input id="agree" type="checkbox" />
-            <div class="checkText">上記の規約に同意します</div>
-          </div>
+          <!-- 火葬の規約 -->
+          <details id="dCremation">
+            <summary>
+              <span>火葬の規約</span>
+              <span class="badge" id="bCremation">未確認</span>
+            </summary>
+
+            <div class="panel">
+              <div class="termsBox" id="boxCremation" aria-label="火葬の規約本文">
+                <p><strong>火葬の規約（モック）</strong></p>
+                <p>本規約は、火葬申込みに関する手続き・注意事項・免責等を定めます。</p>
+                <p>・申込み内容に虚偽がないこと</p>
+                <p>・当日の持ち物／受付時間を遵守すること</p>
+                <p>・危険物の持ち込みを行わないこと</p>
+                <p>・施設スタッフの案内に従うこと</p>
+                <p>・その他、施設が定める運用ルール</p>
+                <p>（本文はデモ用です。実際は正式文面を掲載）</p>
+                <p style="margin-top:20px;"><strong>最終行</strong>：ここまで読んだら同意が有効になります。</p>
+              </div>
+
+              <label class="subAgree" id="rowAgreeCremation">
+                <input id="agreeCremation" type="checkbox" disabled />
+                <div>
+                  <div class="checkText">火葬の規約に同意します</div>
+                  <div class="checkHint" id="hintCremation">※最後までスクロールするとチェックできます</div>
+                </div>
+              </label>
+            </div>
+          </details>
+
+          <!-- 個人情報の規約 -->
+          <details id="dPrivacy">
+            <summary>
+              <span>個人情報の規約</span>
+              <span class="badge" id="bPrivacy">未確認</span>
+            </summary>
+
+            <div class="panel">
+              <div class="termsBox" id="boxPrivacy" aria-label="個人情報の規約本文">
+                <p><strong>個人情報の規約（モック）</strong></p>
+                <p>取得する個人情報（氏名、電話番号、住所等）を、申込み手続き・連絡の目的で利用します。</p>
+                <p>・利用目的の範囲内で取り扱います</p>
+                <p>・第三者提供は必要な場合を除き行いません</p>
+                <p>・保管期間と削除方針</p>
+                <p>・開示、訂正、削除等の請求手続き</p>
+                <p>（本文はデモ用です。実際は正式文面を掲載）</p>
+                <p style="margin-top:20px;"><strong>最終行</strong>：ここまで読んだら同意が有効になります。</p>
+              </div>
+
+              <label class="subAgree" id="rowAgreePrivacy">
+                <input id="agreePrivacy" type="checkbox" disabled />
+                <div>
+                  <div class="checkText">個人情報の規約に同意します</div>
+                  <div class="checkHint" id="hintPrivacy">※最後までスクロールするとチェックできます</div>
+                </div>
+              </label>
+            </div>
+          </details>
         </div>
-
       </div>
 
       <div class="actions">
-        <button class="btn primary" id="submit" disabled>登録</button>
+        <button class="btn" id="submit" disabled>登録</button>
       </div>
     </section>
 
     <div class="note">※一度登録した方は、次回以降ホーム画面が表示されます</div>
-
   </div>
 
   <script>
-    // ===== 重要：登録済みなら、この画面を絶対に出さない =====
-    // （戻るや直URLでも register.html が表示されない）
+    // ===== 登録済みなら表示しない（安全ガード） =====
     const LS_REGISTERED = "miniapp_registered";         // "1" なら登録済み
     const LS_PROFILE    = "miniapp_user_profile";       // {name,tel,addr}
 
@@ -283,36 +412,136 @@
       }
     })();
 
+    // ===== elements =====
     const nameEl = document.getElementById("name");
     const telEl  = document.getElementById("tel");
     const addrEl = document.getElementById("addr");
-    const agreeEl= document.getElementById("agree");
-    const btn    = document.getElementById("submit");
     const errEl  = document.getElementById("err");
+    const btn    = document.getElementById("submit");
 
-    function valid(){
-      const name = nameEl.value.trim();
-      const tel  = telEl.value.trim();
-      const addr = addrEl.value.trim();
-      const agree = agreeEl.checked;
-      return name && tel && addr && agree;
+    const agreeAllEl = document.getElementById("agreeAll");
+
+    const boxCremation = document.getElementById("boxCremation");
+    const boxPrivacy   = document.getElementById("boxPrivacy");
+
+    const agreeCremation = document.getElementById("agreeCremation");
+    const agreePrivacy   = document.getElementById("agreePrivacy");
+
+    const rowAgreeCremation = document.getElementById("rowAgreeCremation");
+    const rowAgreePrivacy   = document.getElementById("rowAgreePrivacy");
+
+    const bCremation = document.getElementById("bCremation");
+    const bPrivacy   = document.getElementById("bPrivacy");
+
+    const hintCremation = document.getElementById("hintCremation");
+    const hintPrivacy   = document.getElementById("hintPrivacy");
+
+    // ===== state =====
+    let cremationScrolled = false;
+    let privacyScrolled = false;
+
+    function isFilled(){
+      return nameEl.value.trim() && telEl.value.trim() && addrEl.value.trim();
     }
 
-    function updateBtn(){
-      btn.disabled = !valid();
+    function canSubmit(){
+      // 個別2つがチェックされて初めて登録可能
+      return isFilled() && agreeCremation.checked && agreePrivacy.checked;
+    }
+
+    function updateSubmit(){
+      btn.disabled = !canSubmit();
       errEl.style.display = "none";
     }
 
-    [nameEl, telEl, addrEl].forEach(el => el.addEventListener("input", updateBtn));
-    agreeEl.addEventListener("change", updateBtn);
+    // ===== スクロール検知：最後まで行ったら個別同意を有効にする =====
+    function isScrolledToBottom(el){
+      // 少し余裕を持って判定
+      const threshold = 6;
+      return (el.scrollTop + el.clientHeight) >= (el.scrollHeight - threshold);
+    }
 
+    function enableCremationAgree(){
+      cremationScrolled = true;
+      agreeCremation.disabled = false;
+      rowAgreeCremation.classList.add("enabled");
+      bCremation.textContent = "確認済み";
+      bCremation.classList.add("ok");
+      hintCremation.textContent = "チェックできます";
+      updateSubmit();
+    }
+
+    function enablePrivacyAgree(){
+      privacyScrolled = true;
+      agreePrivacy.disabled = false;
+      rowAgreePrivacy.classList.add("enabled");
+      bPrivacy.textContent = "確認済み";
+      bPrivacy.classList.add("ok");
+      hintPrivacy.textContent = "チェックできます";
+      updateSubmit();
+    }
+
+    boxCremation.addEventListener("scroll", ()=>{
+      if(!cremationScrolled && isScrolledToBottom(boxCremation)){
+        enableCremationAgree();
+      }
+    });
+    boxPrivacy.addEventListener("scroll", ()=>{
+      if(!privacyScrolled && isScrolledToBottom(boxPrivacy)){
+        enablePrivacyAgree();
+      }
+    });
+
+    // ===== アコーディオンを開いたら本文へ少しスクロール（視線誘導） =====
+    document.getElementById("dCremation").addEventListener("toggle", (e)=>{
+      if(e.target.open){
+        setTimeout(()=> boxCremation.scrollIntoView({behavior:"smooth", block:"center"}), 150);
+      }
+    });
+    document.getElementById("dPrivacy").addEventListener("toggle", (e)=>{
+      if(e.target.open){
+        setTimeout(()=> boxPrivacy.scrollIntoView({behavior:"smooth", block:"center"}), 150);
+      }
+    });
+
+    // ===== 全体同意：個別のチェックへ連動 =====
+    agreeAllEl.addEventListener("change", ()=>{
+      if(agreeAllEl.checked){
+        // スクロール完了してない規約があるなら、全体同意は戻す（強制しない）
+        if(!cremationScrolled || !privacyScrolled){
+          alert("各規約を開いて、最後までスクロールしてください。");
+          agreeAllEl.checked = false;
+          return;
+        }
+        agreeCremation.checked = true;
+        agreePrivacy.checked = true;
+      } else {
+        // デモとして分かりやすく全部外す
+        agreeCremation.checked = false;
+        agreePrivacy.checked = false;
+      }
+      updateSubmit();
+    });
+
+    // 個別同意の変更：両方ONなら全体同意もONにする／どちらかOFFなら全体同意OFF
+    function syncAllFromIndividuals(){
+      const both = agreeCremation.checked && agreePrivacy.checked;
+      agreeAllEl.checked = both;
+      updateSubmit();
+    }
+    agreeCremation.addEventListener("change", syncAllFromIndividuals);
+    agreePrivacy.addEventListener("change", syncAllFromIndividuals);
+
+    // 入力欄
+    [nameEl, telEl, addrEl].forEach(el => el.addEventListener("input", updateSubmit));
+
+    // ===== 登録 =====
     btn.addEventListener("click", ()=>{
-      if(!valid()){
+      if(!canSubmit()){
         errEl.style.display = "";
         return;
       }
 
-      // 登録（モック）：localStorageに保存
       const profile = {
         name: nameEl.value.trim(),
         tel:  telEl.value.trim(),
@@ -321,12 +550,10 @@
       localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
       localStorage.setItem(LS_REGISTERED, "1");
 
-      // 次はホームへ
       location.replace("./index.html");
     });
 
-    // 初期
-    updateBtn();
+    updateSubmit();
   </script>
 </body>
 </html>
