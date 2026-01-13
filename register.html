@@ -506,22 +506,33 @@
 
     // ===== 全体同意：個別のチェックへ連動 =====
     agreeAllEl.addEventListener("change", ()=>{
-      if(agreeAllEl.checked){
-        // スクロール完了してない規約があるなら、全体同意は戻す（強制しない）
-        if(!cremationScrolled || !privacyScrolled){
-          alert("各規約を開いて、最後までスクロールしてください。");
-          agreeAllEl.checked = false;
-          return;
-        }
-        agreeCremation.checked = true;
-        agreePrivacy.checked = true;
-      } else {
-        // デモとして分かりやすく全部外す
-        agreeCremation.checked = false;
-        agreePrivacy.checked = false;
-      }
-      updateSubmit();
-    });
+  if(agreeAllEl.checked){
+    // スクロール完了が前提（未完了なら戻す）
+    if(!cremationScrolled || !privacyScrolled){
+      alert("各規約を開いて、最後までスクロールしてください。");
+      agreeAllEl.checked = false;
+      return;
+    }
+
+    // ★重要：disabled解除を先にやる（これをしないとチェックできない）
+    if(agreeCremation.disabled) agreeCremation.disabled = false;
+    if(agreePrivacy.disabled)   agreePrivacy.disabled   = false;
+
+    rowAgreeCremation.classList.add("enabled");
+    rowAgreePrivacy.classList.add("enabled");
+
+    // 個別にチェックを入れる
+    agreeCremation.checked = true;
+    agreePrivacy.checked   = true;
+
+  } else {
+    // 全体OFFなら個別もOFF（デモとして分かりやすく）
+    agreeCremation.checked = false;
+    agreePrivacy.checked   = false;
+  }
+
+  updateSubmit();
+});
 
     // 個別同意の変更：両方ONなら全体同意もONにする／どちらかOFFなら全体同意OFF
     function syncAllFromIndividuals(){
