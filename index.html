@@ -293,6 +293,10 @@
   </div>
 
   <script>
+  // 未登録なら必ず会員登録へ
+if(localStorage.getItem("miniapp_registered") !== "1"){
+  location.replace("./register.html");
+}
     const DAY_KEY = "miniapp_day_mode";
     const CHECKIN_KEY = "miniapp_checkin_done";
 
