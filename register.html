@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>火葬申し込み</title>
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --soft:#f9fafb;
+
+      --radius:16px;
+      --shadow: 0 10px 28px rgba(17,24,39,.08);
+
+      --primary:#111827;
+      --blue:#2563eb;
+
+      --max:520px;
+
+      --title:22px;
+      --label:18px;
+      --sub:14px;
+      --tap:56px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ヘッダー（左：葬儀ミニアプリ / 中央：火葬申し込み / 右：なし） */
+    .header{
+      height:64px;
+      display:grid;
+      grid-template-columns: auto 1fr auto;
+      align-items:center;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+      padding:0 16px;
+      background:#fff;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    .leftTitle{
+      font-size:16px;
+      font-weight:900;
+      color:#111827;
+      white-space:nowrap;
+    }
+    .centerTitle{
+      font-size: var(--title);
+      font-weight:900;
+      text-align:center;
+      letter-spacing:.02em;
+    }
+    .rightSpace{ width:40px; } /* 右なしの見た目を揃える */
+
+    .wrap{
+      max-width: var(--max);
+      margin:0 auto;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background:#fff;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      font-size:16px;
+      font-weight:900;
+      color:#374151;
+    }
+
+    .body{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .field{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      background:#fff;
+    }
+    .k{
+      font-size:12px;
+      font-weight:900;
+      color: var(--muted);
+      letter-spacing:.04em;
+    }
+    input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px 12px;
+      font-size:18px;
+      font-weight:900;
+      outline:none;
+    }
+    input:focus{
+      border-color: rgba(37,99,235,.45);
+      box-shadow: 0 0 0 5px rgba(37,99,235,.12);
+    }
+
+    .termsBox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .termsTitle{
+      font-size:14px;
+      font-weight:900;
+      color:#374151;
+    }
+    .linkRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .linkBtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      height:44px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      color: var(--blue);
+      font-weight:900;
+      text-decoration:none;
+      font-size:14px;
+      white-space:nowrap;
+    }
+    .checkRow{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      padding-top:4px;
+    }
+    .checkRow input[type="checkbox"]{
+      width:22px;
+      height:22px;
+      margin-top:2px;
+    }
+    .checkText{
+      font-size:14px;
+      font-weight:900;
+      color:#111827;
+      line-height:1.4;
+    }
+
+    .actions{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .btn{
+      height: var(--tap);
+      border-radius:16px;
+      border:0;
+      font-size:18px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: var(--shadow);
+    }
+    .btn.primary{ background: var(--primary); color:#fff; }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+
+    .note{
+      text-align:center;
+      color:#9ca3af;
+      font-size:12px;
+      font-weight:800;
+      line-height:1.4;
+      padding:0 8px 12px;
+    }
+
+    .err{
+      display:none;
+      border:1px solid #fecaca;
+      background:#fff1f2;
+      color:#9f1239;
+      border-radius:14px;
+      padding:12px;
+      font-weight:900;
+      font-size:14px;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="leftTitle">葬儀ミニアプリ</div>
+    <div class="centerTitle">火葬申し込み</div>
+    <div class="rightSpace"></div>
+  </header>
+
+  <div class="wrap">
+
+    <section class="card">
+      <div class="card-hd">火葬申し込み（会員登録）</div>
+
+      <div class="body">
+        <div class="err" id="err">未入力の項目があります。</div>
+
+        <div class="field">
+          <div class="k">申込者氏名</div>
+          <input id="name" type="text" placeholder="例）山田 太郎" autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <div class="k">電話番号</div>
+          <input id="tel" type="tel" placeholder="例）09012345678" autocomplete="tel" inputmode="tel" />
+        </div>
+
+        <div class="field">
+          <div class="k">住所</div>
+          <input id="addr" type="text" placeholder="例）東京都◯◯区◯◯ 1-2-3" autocomplete="street-address" />
+        </div>
+
+        <div class="termsBox">
+          <div class="termsTitle">同意事項</div>
+
+          <div class="linkRow">
+            <a class="linkBtn" href="./terms.html" target="_blank" rel="noopener">火葬の規約</a>
+            <a class="linkBtn" href="./privacy.html" target="_blank" rel="noopener">個人情報の規約</a>
+          </div>
+
+          <div class="checkRow">
+            <input id="agree" type="checkbox" />
+            <div class="checkText">上記の規約に同意します</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="submit" disabled>登録</button>
+      </div>
+    </section>
+
+    <div class="note">※一度登録した方は、次回以降ホーム画面が表示されます</div>
+
+  </div>
+
+  <script>
+    // ===== 重要：登録済みなら、この画面を絶対に出さない =====
+    // （戻るや直URLでも register.html が表示されない）
+    const LS_REGISTERED = "miniapp_registered";         // "1" なら登録済み
+    const LS_PROFILE    = "miniapp_user_profile";       // {name,tel,addr}
+
+    (function redirectIfRegistered(){
+      if(localStorage.getItem(LS_REGISTERED) === "1"){
+        location.replace("./index.html");
+      }
+    })();
+
+    const nameEl = document.getElementById("name");
+    const telEl  = document.getElementById("tel");
+    const addrEl = document.getElementById("addr");
+    const agreeEl= document.getElementById("agree");
+    const btn    = document.getElementById("submit");
+    const errEl  = document.getElementById("err");
+
+    function valid(){
+      const name = nameEl.value.trim();
+      const tel  = telEl.value.trim();
+      const addr = addrEl.value.trim();
+      const agree = agreeEl.checked;
+      return name && tel && addr && agree;
+    }
+
+    function updateBtn(){
+      btn.disabled = !valid();
+      errEl.style.display = "none";
+    }
+
+    [nameEl, telEl, addrEl].forEach(el => el.addEventListener("input", updateBtn));
+    agreeEl.addEventListener("change", updateBtn);
+
+    btn.addEventListener("click", ()=>{
+      if(!valid()){
+        errEl.style.display = "";
+        return;
+      }
+
+      // 登録（モック）：localStorageに保存
+      const profile = {
+        name: nameEl.value.trim(),
+        tel:  telEl.value.trim(),
+        addr: addrEl.value.trim()
+      };
+      localStorage.setItem(LS_PROFILE, JSON.stringify(profile));
+      localStorage.setItem(LS_REGISTERED, "1");
+
+      // 次はホームへ
+      location.replace("./index.html");
+    });
+
+    // 初期
+    updateBtn();
+  </script>
+</body>
+</html>
