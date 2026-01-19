@@ -7,217 +7,68 @@
 
   <style>
     :root{
-      --bg:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-
-      --radius:16px;
-      --shadow: 0 10px 28px rgba(17,24,39,.08);
-
-      --primary:#111827;
-      --blue:#2563eb;
-
-      --max:520px;
-      --title:22px;
-      --label:18px;
+      --bg:#ffffff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --radius:16px; --shadow: 0 10px 28px rgba(17,24,39,.08);
+      --primary:#111827; --blue:#2563eb;
+      --max:520px; --title:22px;
     }
-
     *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+    body{ margin:0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif; background:var(--bg); color:var(--text); }
 
     .header{
-      height:64px;
-      display:grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items:center;
-      border-bottom:1px solid var(--line);
-      padding:0 12px;
-      background:#fff;
-      position:sticky;
-      top:0;
-      z-index:60;
-      gap:8px;
+      height:64px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+      border-bottom:1px solid var(--line); padding:0 12px; background:#fff; position:sticky; top:0; z-index:60; gap:8px;
     }
-    .header-title{
-      grid-column:2;
-      font-size: var(--title);
-      font-weight: 900;
-      text-align:center;
-      letter-spacing:.02em;
-    }
-    .header-left{
-      grid-column:1;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .header-right{
-      grid-column:3;
-      justify-self:end;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .header-home{
-      font-size:18px;
-      font-weight:900;
-      text-decoration:none;
-      color: var(--blue);
-      white-space:nowrap;
-    }
+    .header-title{ grid-column:2; font-size:var(--title); font-weight:900; text-align:center; letter-spacing:.02em; }
+    .header-left{ grid-column:1; display:flex; align-items:center; gap:8px; }
+    .header-right{ grid-column:3; justify-self:end; display:flex; align-items:center; gap:8px; }
 
     .iconBtn{
-      width:44px;height:44px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      position:relative;
+      width:44px;height:44px; border-radius:14px; border:1px solid var(--line); background:#fff;
+      display:grid; place-items:center; cursor:pointer; position:relative;
     }
     .iconBtn:active{ background:#f3f4f6; }
     .iconBtn svg{ width:22px;height:22px; }
-
     .badge{
-      position:absolute;
-      top:-6px; right:-6px;
-      min-width:22px;
-      height:22px;
-      padding:0 6px;
-      border-radius:999px;
-      background:#dc2626;
-      color:#fff;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-      font-weight:900;
-      border:2px solid #fff;
+      position:absolute; top:-6px; right:-6px; min-width:22px; height:22px; padding:0 6px;
+      border-radius:999px; background:#dc2626; color:#fff; display:none; align-items:center; justify-content:center;
+      font-size:12px; font-weight:900; border:2px solid #fff;
     }
 
     .role-switch{ display:flex; gap:4px; }
     .role-switch button{
-      border:1px solid var(--line);
-      background:#fff;
-      padding:6px 10px;
-      border-radius:10px;
-      font-size:12px;
-      font-weight:900;
-      cursor:pointer;
-      white-space:nowrap;
+      border:1px solid var(--line); background:#fff; padding:6px 10px; border-radius:10px;
+      font-size:12px; font-weight:900; cursor:pointer; white-space:nowrap;
     }
-    .role-switch button.active{
-      background: var(--primary);
-      color:#fff;
-      border-color: var(--primary);
-    }
+    .role-switch button.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
 
-    .wrap{
-      max-width: var(--max);
-      margin:0 auto;
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
+    .wrap{ max-width:var(--max); margin:0 auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
 
-    .card{
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      background:#fff;
-      box-shadow: var(--shadow);
-      overflow:hidden;
+    .who{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:#fff; font-weight:900;
     }
+    .who .label{ font-size:12px; color:var(--muted); font-weight:900; white-space:nowrap; }
+    .who .name{ font-size:16px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .card{ border:1px solid var(--line); border-radius:var(--radius); background:#fff; box-shadow:var(--shadow); overflow:hidden; }
     .card-hd{
-      padding:14px 16px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;
+      gap:10px; background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
     }
-    .card-hd .h{
-      font-size:16px;
-      font-weight:900;
-      color:#374151;
-    }
+    .card-hd .h{ font-size:16px; font-weight:900; color:#374151; }
     .pill{
-      font-size:12px;
-      font-weight:800;
-      color: var(--muted);
-      border:1px solid var(--line);
-      background:#fff;
-      padding:8px 10px;
-      border-radius:999px;
-      white-space:nowrap;
+      font-size:12px; font-weight:800; color:var(--muted); border:1px solid var(--line); background:#fff;
+      padding:8px 10px; border-radius:999px; white-space:nowrap;
     }
 
     .list{ padding:12px; display:flex; flex-direction:column; gap:10px; }
-    .row{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      background:#fff;
-    }
-    .top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      font-weight:900;
-    }
+    .row{ border:1px solid var(--line); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; background:#fff; }
+    .top{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-weight:900; }
     .date{ color:#374151; }
     .total{ white-space:nowrap; }
-    .items{
-      font-size:12px;
-      color: var(--muted);
-      font-weight:800;
-      line-height:1.5;
-    }
-
-    /* ★注文者（申込者）を分かりやすく */
-    .who{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
-      font-weight:900;
-    }
-    .who .label{
-      font-size:12px;
-      color: var(--muted);
-      font-weight:900;
-      white-space:nowrap;
-    }
-    .who .name{
-      font-size:16px;
-      color: var(--text);
-      font-weight:900;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-
-    .empty{
-      padding:14px 16px;
-      color: var(--muted);
-      font-weight:900;
-    }
+    .items{ font-size:12px; color:var(--muted); font-weight:800; line-height:1.5; }
+    .empty{ padding:14px 16px; color:var(--muted); font-weight:900; }
   </style>
 </head>
 
@@ -248,13 +99,10 @@
         <button id="btnHost" type="button">喪主</button>
         <button id="btnCompanion" type="button">同行者</button>
       </div>
-
-      <a class="header-home" href="./index.html">ホーム</a>
     </div>
   </header>
 
   <div class="wrap">
-    <!-- ★申込者（注文者）表示 -->
     <section class="who" aria-label="申込者">
       <div class="label">申込者</div>
       <div class="name" id="applicantName">—</div>
@@ -271,23 +119,18 @@
 
   <script>
     const LS_CART = "miniapp_cart";
-    const LS_ROLE = "miniapp_role"; // "host" | "companion"
-
-    // ★モックの申込者名（必要なら別画面で保存するキーに置換）
+    const LS_ROLE = "miniapp_role";
+    const LS_HISTORY = "miniapp_order_history";
     const LS_APPLICANT_NAME = "miniapp_applicant_name";
-    if(!localStorage.getItem(LS_APPLICANT_NAME)){
-      localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
-    }
 
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
+    if(!localStorage.getItem(LS_APPLICANT_NAME)) localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
 
     const backBtn = document.getElementById("backBtn");
     const cartBtn = document.getElementById("cartBtn");
     const cartBadge = document.getElementById("cartBadge");
-
     const btnHost = document.getElementById("btnHost");
     const btnCompanion = document.getElementById("btnCompanion");
-
     const applicantNameEl = document.getElementById("applicantName");
     const countPill = document.getElementById("countPill");
     const historyList = document.getElementById("historyList");
@@ -297,26 +140,21 @@
 
     function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
     function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
     }
 
     function loadCart(){
-      try{
-        const raw = localStorage.getItem(LS_CART);
-        if(!raw) return {};
-        const obj = JSON.parse(raw);
-        return (obj && typeof obj === "object") ? obj : {};
-      }catch{
-        return {};
-      }
+      try{ return JSON.parse(localStorage.getItem(LS_CART)||"{}") || {}; }catch{ return {}; }
     }
-    function cartCount(cart){
-      return Object.values(cart).reduce((a,b)=>a+Number(b||0),0);
+    function cartCount(cart){ return Object.values(cart).reduce((a,b)=>a+Number(b||0),0); }
+
+    function loadHistory(){
+      try{
+        const raw = localStorage.getItem(LS_HISTORY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      }catch{ return []; }
     }
 
     function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
@@ -325,53 +163,41 @@
     btnHost.addEventListener("click", ()=>setRole("host"));
     btnCompanion.addEventListener("click", ()=>setRole("companion"));
 
-    // デモ履歴（APIに置換予定） + ★注文者名を入れる（将来はAPIの項目）
-    const DEMO_HISTORY = [
-      { id:"H-20260119-001", date:"2026/01/19 10:12", total:1240, items:["瓶ビール × 1","お茶 × 2","おしぼり × 2"], orderedBy:"山田 太郎" },
-      { id:"H-20260118-004", date:"2026/01/18 16:40", total:540,  items:["水 × 1","のど飴 × 1","おしぼり × 1"], orderedBy:"山田 太郎" },
-    ];
-
     function render(){
-      // role
       const role = getRole();
       const host = role === "host";
       btnHost.classList.toggle("active", host);
       btnCompanion.classList.toggle("active", !host);
 
-      // applicant
       const applicant = localStorage.getItem(LS_APPLICANT_NAME) || "—";
       applicantNameEl.textContent = applicant;
 
-      // cart badge
       const cart = loadCart();
       const c = cartCount(cart);
-      if(c>0){
-        cartBadge.style.display = "inline-flex";
-        cartBadge.textContent = String(c);
-      }else{
-        cartBadge.style.display = "none";
-      }
+      if(c>0){ cartBadge.style.display="inline-flex"; cartBadge.textContent=String(c); }
+      else{ cartBadge.style.display="none"; }
 
-      // history
-      countPill.textContent = `${DEMO_HISTORY.length}件`;
-      historyList.innerHTML = DEMO_HISTORY.length
-        ? DEMO_HISTORY.map(h => `
+      const history = loadHistory();
+      countPill.textContent = `${history.length}件`;
+
+      historyList.innerHTML = history.length
+        ? history.map(h => `
           <div class="row">
             <div class="top">
-              <div class="date">${escapeHtml(h.date)}</div>
-              <div class="total">${yen(h.total)}</div>
+              <div class="date">${escapeHtml(h.date || "")}</div>
+              <div class="total">${yen(h.total || 0)}</div>
             </div>
-            <div class="items">注文者：${escapeHtml(h.orderedBy || applicant)}</div>
-            <div class="items">${escapeHtml(h.items.join(" / "))}</div>
-            <div class="items">注文ID：${escapeHtml(h.id)}</div>
+            <div class="items">注文者（申込者）：${escapeHtml(h.orderedBy || applicant)}</div>
+            ${h.operatorRole ? `<div class="items">操作：${escapeHtml(h.operatorRole)}</div>` : ``}
+            <div class="items">${escapeHtml((h.items || []).join(" / "))}</div>
+            <div class="items">注文ID：${escapeHtml(h.id || "")}</div>
           </div>
         `).join("")
         : `<div class="empty">購入履歴はありません。</div>`;
     }
 
-    // 戻ってきた時にも最新反映
-    window.addEventListener("pageshow", () => render());
-    document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
+    window.addEventListener("pageshow", render);
+    document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) render(); });
 
     render();
   </script>
