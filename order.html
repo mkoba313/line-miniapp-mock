@@ -823,6 +823,16 @@
 
     // 初期描画
     renderAll();
+    // 戻ってきた時（履歴戻り/キャッシュ復帰）にも必ず最新のカートを反映
+window.addEventListener("pageshow", () => {
+  renderAll();
+});
+
+// アプリが前面に戻った時にも反映（WebView/タブ切替対策）
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) renderAll();
+});
+
   </script>
 </body>
 </html>
