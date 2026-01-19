@@ -11,7 +11,6 @@
       --muted:#6b7280;
       --border:#e5e7eb;
       --primary:#111827;
-      --disabled:#9ca3af;
       --card:#ffffff;
       --shadow:0 6px 18px rgba(0,0,0,.06);
       --radius:16px;
@@ -92,7 +91,6 @@
       outline:none;
       -webkit-appearance:none;
       appearance:none;
-      box-sizing:border-box;
     }
     input[type="text"]:focus, input[type="tel"]:focus{
       border-color:#9ca3af;
@@ -104,7 +102,7 @@
       margin-top:6px;
     }
 
-    /* ===== 同行者選択（必須） ===== */
+    /* ===== 立場選択（必須） ===== */
     .choice-wrap{
       margin-top:10px;
       border:1px solid var(--border);
@@ -273,32 +271,32 @@
     <label for="address">住所（必須）</label>
     <input id="address" name="address" type="text" placeholder="例：東京都〇〇区…" autocomplete="street-address" required />
 
-    <!-- ✅ 追加：同行者の有無（必須） -->
-    <div class="choice-wrap" aria-label="同行者の選択（必須）">
-      <label style="margin:0;">同行者（必須）</label>
+    <!-- ✅ 追加：申込者の立場（必須） -->
+    <div class="choice-wrap" aria-label="申込者の立場（必須）">
+      <label style="margin:0;">申込者の立場（必須）</label>
       <div class="note" style="margin:6px 0 0;">
-        ※どちらかを必ず選択してください（未選択のまま登録はできません）
+        ※「喪主」または「同行者」を必ず選択してください（未選択のまま登録はできません）
       </div>
 
       <div class="choice-grid">
-        <label class="choice" for="companionYes">
-          <input id="companionYes" type="radio" name="companion" value="yes" />
+        <label class="choice" for="roleChief">
+          <input id="roleChief" type="radio" name="applicantRole" value="chief" />
           <div>
-            <div class="c-main">同行者がいる</div>
-            <div class="c-sub">当日、同伴される方がいる場合はこちら</div>
+            <div class="c-main">喪主</div>
+            <div class="c-sub">代表として手続きを行う方</div>
           </div>
         </label>
 
-        <label class="choice" for="companionNo">
-          <input id="companionNo" type="radio" name="companion" value="no" />
+        <label class="choice" for="roleCompanion">
+          <input id="roleCompanion" type="radio" name="applicantRole" value="companion" />
           <div>
-            <div class="c-main">同行者はいない</div>
-            <div class="c-sub">当日、同伴される方がいない場合はこちら</div>
+            <div class="c-main">同行者</div>
+            <div class="c-sub">喪主に同行している方</div>
           </div>
         </label>
       </div>
 
-      <div class="warn" id="companionWarn">※同行者の有無を選択してください。</div>
+      <div class="warn" id="roleWarn">※申込者の立場を選択してください。</div>
     </div>
 
     <p class="note">※入力項目は今後増える可能性があります。</p>
@@ -425,7 +423,7 @@
 
   <div class="card cta">
     <button id="submitBtn" type="button" disabled>登録</button>
-    <p class="note" style="margin:0;">※「登録」は、同行者選択と2つの規約への同意がそろった時点で押せます。</p>
+    <p class="note" style="margin:0;">※「登録」は、立場選択と2つの規約への同意がそろった時点で押せます。</p>
   </div>
 </main>
 
@@ -443,9 +441,9 @@
 
   const submitBtn = document.getElementById('submitBtn');
 
-  // ✅ 同行者必須
-  const companionRadios = Array.from(document.querySelectorAll('input[name="companion"]'));
-  const companionWarn = document.getElementById('companionWarn');
+  // ✅ 立場必須
+  const roleRadios = Array.from(document.querySelectorAll('input[name="applicantRole"]'));
+  const roleWarn = document.getElementById('roleWarn');
 
   // state
   let cremationUnlockedByScroll = false;
@@ -455,18 +453,16 @@
     return el.scrollTop + el.clientHeight >= el.scrollHeight - 5;
   }
 
-  function isCompanionSelected(){
-    return companionRadios.some(r => r.checked);
+  function isRoleSelected(){
+    return roleRadios.some(r => r.checked);
   }
 
   function updateButtonState() {
     const agreed = cremationAgree.checked && miniappAgree.checked;
-    const companionOk = isCompanionSelected();
+    const roleOk = isRoleSelected();
 
-    // 未選択なら警告（押し間違い防止）
-    companionWarn.style.display = companionOk ? "none" : "block";
-
-    submitBtn.disabled = !(agreed && companionOk);
+    roleWarn.style.display = roleOk ? "none" : "block";
+    submitBtn.disabled = !(agreed && roleOk);
   }
 
   function syncMasterFromIndividuals() {
@@ -476,7 +472,6 @@
 
   function applyMasterAgree(isOn) {
     if (isOn) {
-      // スクロール不要で個別チェックをONにする
       cremationAgree.disabled = false;
       miniappAgree.disabled = false;
 
@@ -504,7 +499,7 @@
     updateButtonState();
   }
 
-  // scroll unlock: cremation
+  // scroll unlock
   cremationScroll.addEventListener('scroll', () => {
     if (cremationUnlockedByScroll) return;
     if (!allAgree.checked && nearBottom(cremationScroll)) {
@@ -514,7 +509,6 @@
     }
   });
 
-  // scroll unlock: miniapp
   miniappScroll.addEventListener('scroll', () => {
     if (miniappUnlockedByScroll) return;
     if (!allAgree.checked && nearBottom(miniappScroll)) {
@@ -529,7 +523,7 @@
     applyMasterAgree(allAgree.checked);
   });
 
-  // individual agrees
+  // individuals
   cremationAgree.addEventListener('change', () => {
     if (allAgree.checked && !cremationAgree.checked) {
       allAgree.checked = false;
@@ -550,19 +544,16 @@
     updateButtonState();
   });
 
-  // ✅ 同行者選択の変更でボタン更新
-  companionRadios.forEach(r => r.addEventListener('change', updateButtonState));
+  // ✅ 立場選択の変更でボタン更新
+  roleRadios.forEach(r => r.addEventListener('change', updateButtonState));
 
   // submit (mock)
   submitBtn.addEventListener('click', () => {
-    // モック：登録済みフラグ（index.htmlのガードに合わせる）
     localStorage.setItem("miniapp_registered", "1");
 
-    // モック：同行者選択を保存（任意）
-    const selected = companionRadios.find(r => r.checked)?.value || "";
-    localStorage.setItem("miniapp_companion", selected); // yes / no
+    const selected = roleRadios.find(r => r.checked)?.value || "";
+    localStorage.setItem("miniapp_applicant_role", selected); // chief / companion
 
-    // ホームへ
     window.location.replace("./index.html");
   });
 
