@@ -138,6 +138,24 @@
       border-color: var(--primary);
     }
 
+    /* Success banner (注文完了) */
+    .successBanner{
+      position:sticky;
+      top:64px;
+      z-index:55;
+      border-bottom:1px solid #bbf7d0;
+      background:#f0fdf4;
+      color:#166534;
+      font-weight:900;
+      padding:10px 12px;
+      display:none;
+    }
+    .successBanner .inner{
+      max-width: var(--max);
+      margin:0 auto;
+      text-align:center;
+    }
+
     .wrap{
       max-width: var(--max);
       margin:0 auto;
@@ -301,7 +319,6 @@
       box-shadow:none;
     }
 
-    /* 高齢者向け：履歴ボタンを大きく */
     .historyBtn{
       height:72px;
       border-radius:22px;
@@ -342,6 +359,11 @@
     </div>
   </header>
 
+  <!-- ★注文完了バナー -->
+  <div class="successBanner" id="successBanner">
+    <div class="inner">注文が完了しました</div>
+  </div>
+
   <div class="wrap">
     <section class="card">
       <div class="card-hd">
@@ -357,7 +379,7 @@
       </div>
 
       <div class="actions">
-        <!-- ★追加：注文する（カート空なら非活性） -->
+        <!-- 注文する（画面遷移しない） -->
         <button class="btn primary" id="orderBtn" type="button">注文する</button>
 
         <!-- 全削除 -->
@@ -370,7 +392,7 @@
   </div>
 
   <script>
-    // ===== 商品マスタ（order.html と揃える） =====
+    // ===== 商品マスタ =====
     const PRODUCTS = [
       { id:"p_beer", name:"瓶ビール", price:600 },
       { id:"p_tea",  name:"お茶（ペットボトル）", price:160 },
@@ -382,15 +404,14 @@
       { id:"s_choco", name:"チョコレート", price:220 },
     ];
 
-    const LS_CART = "miniapp_cart";           // ★喪主/同行者で共有
-    const LS_ROLE = "miniapp_role";           // 表示切替（UI統一用）
-    const LS_HISTORY = "miniapp_order_history"; // ★購入履歴保存先
-    const LS_APPLICANT_NAME = "miniapp_applicant_name"; // 申込者名（モック）
+    const LS_CART = "miniapp_cart";
+    const LS_ROLE = "miniapp_role";
+    const LS_HISTORY = "miniapp_order_history";
+    const LS_APPLICANT_NAME = "miniapp_applicant_name";
 
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
     if(!localStorage.getItem(LS_APPLICANT_NAME)) localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
 
-    // ===== Elements =====
     const backBtn = document.getElementById("backBtn");
     const cartBtn = document.getElementById("cartBtn");
     const cartBadge = document.getElementById("cartBadge");
@@ -405,6 +426,8 @@
     const orderBtn = document.getElementById("orderBtn");
     const clearAllBtn = document.getElementById("clearAllBtn");
     const historyBtn = document.getElementById("historyBtn");
+
+    const successBanner = document.getElementById("successBanner");
 
     // ===== Utils =====
     function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
@@ -431,7 +454,7 @@
       localStorage.setItem(LS_CART, JSON.stringify(cart));
     }
 
-    // ★バッジが消えない対策：マスタに無いIDは自動で削除
+    // マスタに無いIDは削除
     function normalizeCart(cart){
       const out = {};
       let changed = false;
@@ -486,6 +509,12 @@
       return `H-${ymd}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
     }
 
+    function showSuccess(){
+      successBanner.style.display = "";
+      // 5秒後に自動で消す（不要なら消してOK）
+      setTimeout(()=>{ successBanner.style.display = "none"; }, 5000);
+    }
+
     // ===== Navigation =====
     backBtn.addEventListener("click", ()=> location.href = "./order.html");
     cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
@@ -497,10 +526,11 @@
     // ===== 全削除 =====
     clearAllBtn.addEventListener("click", ()=>{
       saveCart({});
+      successBanner.style.display = "none";
       render();
     });
 
-    // ===== 注文する（履歴に保存してカート空にして履歴へ） =====
+    // ===== 注文する（画面遷移しない） =====
     orderBtn.addEventListener("click", ()=>{
       const loaded = loadCart();
       const normalized = normalizeCart(loaded);
@@ -524,22 +554,24 @@
 
       const total = cartTotal(cart);
 
+      // ★履歴に追加
       const history = loadHistory();
       history.unshift({
         id: makeOrderId(),
         date: formatDate(new Date()),
         total,
         items,
-        orderedBy: applicant,       // ★注文者（申込者）
-        operatorRole: roleLabel     // 任意：操作したのが喪主/同行者
+        orderedBy: applicant,   // 注文者（申込者）
+        operatorRole: roleLabel // 操作したのが喪主/同行者
       });
       saveHistory(history);
 
-      // カートを空に
+      // ★カートを空に
       saveCart({});
 
-      // 履歴へ
-      location.href = "./history.html";
+      // ★完了メッセージ表示＆画面更新（この画面のまま）
+      showSuccess();
+      render();
     });
 
     // ===== イベント委譲（数量＋/−/削除） =====
@@ -553,6 +585,7 @@
       if(act){
         const id = t.getAttribute("data-id");
         if(!id) return;
+
         const loaded = loadCart();
         const normalized = normalizeCart(loaded);
         const cart = normalized.cart;
@@ -563,6 +596,7 @@
         else cart[id] = next;
 
         saveCart(cart);
+        successBanner.style.display = "none";
         render();
         return;
       }
@@ -574,6 +608,7 @@
 
         delete cart[del];
         saveCart(cart);
+        successBanner.style.display = "none";
         render();
         return;
       }
@@ -609,12 +644,10 @@
       countPill.textContent = `${count}点`;
       totalEl.textContent = yen(cartTotal(cart));
 
-      // ボタン制御
       const has = entries.length > 0;
       orderBtn.disabled = !has;
       clearAllBtn.disabled = !has;
 
-      // 空表示
       if(!has){
         cartList.innerHTML = `<div class="empty">カートは、空になります</div>`;
         return;
@@ -647,7 +680,6 @@
       }).join("");
     }
 
-    // 戻ってきた時にも最新反映
     window.addEventListener("pageshow", () => render());
     document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
 
