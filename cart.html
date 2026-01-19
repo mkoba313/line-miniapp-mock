@@ -372,6 +372,19 @@
       </div>
 
       <div class="list" id="cartList"></div>
+      <!-- ★注文完了メッセージ（カード内） -->
+      <div id="doneMsg" style="
+        display:none;
+        margin:12px 12px 0;
+        border:1px solid #bbf7d0;
+        background:#f0fdf4;
+        color:#166534;
+        padding:12px 14px;
+        border-radius:14px;
+        font-weight:900;
+        text-align:center;">
+        注文が完了しました
+      </div>
 
       <div class="sum">
         <div>合計</div>
@@ -428,7 +441,8 @@
     const historyBtn = document.getElementById("historyBtn");
 
     const successBanner = document.getElementById("successBanner");
-
+　　const doneMsg = document.getElementById("doneMsg");
+    
     // ===== Utils =====
     function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
     function escapeHtml(s){
@@ -526,7 +540,7 @@
     // ===== 全削除 =====
     clearAllBtn.addEventListener("click", ()=>{
       saveCart({});
-      successBanner.style.display = "none";
+      hideSuccess();
       render();
     });
 
@@ -570,8 +584,11 @@
       saveCart({});
 
       // ★完了メッセージ表示＆画面更新（この画面のまま）
-      showSuccess();
       render();
+      showSuccess();
+      // 完了メッセージが見える位置へスクロール（確実に見せる）
+      doneMsg.scrollIntoView({ behavior:"smooth", block:"start" });
+
     });
 
     // ===== イベント委譲（数量＋/−/削除） =====
