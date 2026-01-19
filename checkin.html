@@ -20,7 +20,6 @@
       --warn:#b45309;
       --soft:#f9fafb;
     }
-
     * , *::before, *::after { box-sizing: border-box; }
 
     body{
@@ -112,6 +111,7 @@
       color:var(--muted);
       font-weight:800;
       margin-top:2px;
+      line-height:1.55;
     }
 
     .status-meta{
@@ -171,22 +171,30 @@
       line-height:1.6;
     }
 
-    /* ===== ネイティブ促進カード（チェックイン後に表示） ===== */
-    .native{
+    /* ===== 強制モーダル（閉じられない） ===== */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background: rgba(17,24,39,.60);
       display:none;
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px;
-      background:#fff;
-      box-shadow: var(--shadow);
+      align-items:flex-end;
+      justify-content:center;
+      padding:14px;
+      z-index:9999;
     }
-
-    .native-top{
+    .modal{
+      width:min(520px, 100%);
+      background:#fff;
+      border-radius:18px;
+      border:1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .modal-top{
       display:flex;
       align-items:flex-start;
       gap:12px;
     }
-
     .app-icon{
       width:44px; height:44px;
       border-radius:12px;
@@ -197,49 +205,33 @@
       font-weight:1000;
       flex:0 0 auto;
     }
-
-    .native-title{
+    .modal-title{
       font-size:18px;
       font-weight:1000;
       margin:0;
     }
-    .native-desc{
+    .modal-desc{
       margin:6px 0 0;
-      font-size:14px;
       color:var(--muted);
       font-weight:800;
+      font-size:14px;
       line-height:1.7;
     }
-
-    .native-points{
+    .modal-points{
       margin:12px 0 0;
       padding-left:18px;
       color:var(--text);
       font-weight:900;
     }
-    .native-points li{
+    .modal-points li{
       margin:6px 0;
       font-size:14px;
       font-weight:900;
     }
-    .native-foot{
-      margin-top:12px;
+    .modal-actions{
       display:grid;
       gap:10px;
-    }
-    .subactions{
-      display:flex;
-      justify-content:center;
-    }
-    .linkbtn{
-      background:transparent;
-      border:0;
-      color:var(--muted);
-      font-weight:900;
-      font-size:14px;
-      text-decoration:underline;
-      cursor:pointer;
-      padding:6px 8px;
+      margin-top:12px;
     }
   </style>
 </head>
@@ -253,7 +245,7 @@
 
   <div class="wrap">
 
-    <!-- ✅ 最上部：チェックイン状態 -->
+    <!-- 最上部：チェックイン状態 -->
     <section class="card">
       <div class="card-title">チェックイン状態</div>
 
@@ -262,7 +254,9 @@
           <span class="dot"></span>
           <div>
             <div id="statusText" class="status-text">未チェックイン</div>
-            <div id="statusSub" class="status-sub">受付で案内があった方は「チェックインする」を押してください</div>
+            <div id="statusSub" class="status-sub">
+              受付で案内があった方は「チェックインする」を押してください
+            </div>
           </div>
         </div>
 
@@ -278,48 +272,45 @@
       </div>
 
       <div class="hint">
-        ※チェックインは当日の案内に従って行ってください。<br/>
-        ※モックのため「未チェックインに戻す」も表示できます。
-      </div>
-    </section>
-
-    <!-- ✅ チェックイン後：ネイティブ促進（自然な言い回し） -->
-    <section class="native" id="nativeCard" aria-label="ネイティブアプリのご案内">
-      <div class="native-top">
-        <div class="app-icon" aria-hidden="true">ア</div>
-        <div>
-          <h3 class="native-title">アプリを入れると、当日がもっとスムーズです</h3>
-          <p class="native-desc">
-            チェックインが完了しました。<br/>
-            迷わず使えるように、アプリのご利用をおすすめします（無料）。
-          </p>
-        </div>
-      </div>
-
-      <ul class="native-points">
-        <li>無料Wi-Fiに接続しやすい</li>
-        <li>モバイルオーダーが使える（対応している場合）</li>
-        <li>案内やお知らせを見逃しにくい</li>
-      </ul>
-
-      <div class="native-foot">
-        <button class="btn blue" id="installBtn">アプリを開く／入手する</button>
-        <div class="subactions">
-          <button class="linkbtn" id="laterBtn">いまはこのまま使う（あとで）</button>
-        </div>
-      </div>
-
-      <div class="hint" style="margin-top:10px;">
-        ※この画面（LINEミニアプリ）でも基本操作はできます。<br/>
-        ※アプリは端末のストア画面へ移動します（モックではアラート表示）。
+        ※チェックイン完了後、アプリの案内画面へ進みます。
       </div>
     </section>
 
   </div>
 
+  <!-- ✅ 強制：アプリ誘導モーダル（閉じられない） -->
+  <div class="modal-backdrop" id="installModal" role="dialog" aria-modal="true" aria-label="アプリのご案内">
+    <div class="modal">
+      <div class="modal-top">
+        <div class="app-icon" aria-hidden="true">ア</div>
+        <div>
+          <h3 class="modal-title">アプリへ進んでください</h3>
+          <p class="modal-desc">
+            チェックインが完了しました。<br/>
+            当日のご案内と便利機能のため、アプリを開く／入手してください。
+          </p>
+        </div>
+      </div>
+
+      <ul class="modal-points">
+        <li>無料Wi-Fiに接続しやすい</li>
+        <li>モバイルオーダーが使える（対応している場合）</li>
+        <li>案内やお知らせを見逃しにくい</li>
+      </ul>
+
+      <div class="modal-actions">
+        <button class="btn blue" id="modalInstallBtn">アプリを開く／入手する</button>
+      </div>
+
+      <div class="hint" style="margin-top:10px;">
+        ※アプリは端末のストア画面へ移動します（モックではアラート表示）。
+      </div>
+    </div>
+  </div>
+
   <script>
     // ===== デモ状態保存 =====
-    const LS_KEY = "miniapp_checkin_done_v2";
+    const LS_KEY = "miniapp_checkin_done_force";
 
     const statusPill = document.getElementById("statusPill");
     const statusText = document.getElementById("statusText");
@@ -328,10 +319,9 @@
     const resetBtn   = document.getElementById("resetBtn");
 
     const checkedAt  = document.getElementById("checkedAt");
-    const nativeCard = document.getElementById("nativeCard");
 
-    const installBtn = document.getElementById("installBtn");
-    const laterBtn   = document.getElementById("laterBtn");
+    const installModal = document.getElementById("installModal");
+    const modalInstallBtn = document.getElementById("modalInstallBtn");
 
     function pad(n){ return String(n).padStart(2,"0"); }
 
@@ -340,19 +330,35 @@
       return `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
     }
 
+    function lockBackgroundScroll(lock){
+      // LINE WebViewでも効くように簡易ロック
+      document.body.style.overflow = lock ? "hidden" : "";
+    }
+
+    function openInstallModal(){
+      installModal.style.display = "flex";
+      lockBackgroundScroll(true);
+    }
+
+    function closeInstallModal(){
+      // 強制要件のため、基本は閉じない（将来要件が変わった時用）
+      installModal.style.display = "none";
+      lockBackgroundScroll(false);
+    }
+
     function setCheckedInUI(ts){
       statusPill.classList.remove("pill-warn");
       statusPill.classList.add("pill-ok");
       statusText.textContent = "チェックイン済み";
-      statusSub.textContent  = "このままお進みください。必要に応じてアプリのご案内を表示します。";
+      statusSub.textContent  = "アプリの案内画面が表示されています。";
 
       checkedAt.textContent = ts;
 
       checkinBtn.style.display = "none";
       resetBtn.style.display   = "block";
 
-      // ✅ チェックイン後にネイティブ促進を表示
-      nativeCard.style.display = "block";
+      // ✅ チェックイン後は強制的にモーダル表示
+      openInstallModal();
     }
 
     function setNotCheckedInUI(){
@@ -366,7 +372,8 @@
       checkinBtn.style.display = "block";
       resetBtn.style.display   = "none";
 
-      nativeCard.style.display = "none";
+      // 未チェックイン時はモーダル非表示
+      closeInstallModal();
     }
 
     function saveCheckedIn(ts){
@@ -397,12 +404,10 @@
       const ts = nowText();
       saveCheckedIn(ts);
       setCheckedInUI(ts);
-
-      // 高齢者でも驚かないよう、強いポップアップは出さず軽いトースト風に
       alert("チェックインが完了しました。");
     });
 
-    // モック：未チェックインに戻す
+    // モック：未チェックインに戻す（ただしモーダルが出ているので通常は触れない）
     resetBtn.addEventListener("click", ()=>{
       clearCheckedIn();
       setNotCheckedInUI();
@@ -410,16 +415,20 @@
     });
 
     // アプリ導線（モック）
-    installBtn.addEventListener("click", ()=>{
+    modalInstallBtn.addEventListener("click", ()=>{
       // 実装時：OS判定してストアURL or ディープリンクへ
-      // 例）iOS: itms-apps://... / Android: market://...
+      // iOS例: location.href = "itms-apps://apps.apple.com/app/idXXXXXXXX";
+      // Android例: location.href = "market://details?id=xxxxxxxx";
       alert("（モック）ストア／アプリ起動へ遷移します。");
+
+      // 強制運用なら、実装時はここで必ず遷移させる
+      // location.href = "...";
     });
 
-    // あとで
-    laterBtn.addEventListener("click", ()=>{
-      nativeCard.style.display = "none";
-      alert("このままLINEミニアプリで続けられます。");
+    // ✅ 背景クリックで閉じない（強制）
+    installModal.addEventListener("click", (e)=>{
+      // backdropクリックでも閉じない
+      e.stopPropagation();
     });
   </script>
 </body>
