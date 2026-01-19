@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>カート</title>
+  <title>オーダー（カート）</title>
+
   <style>
     :root{
       --bg:#ffffff;
@@ -17,17 +18,23 @@
 
       --primary:#111827;
       --blue:#2563eb;
+      --danger:#dc2626;
 
+      --tap:56px;
       --max:520px;
+
       --title:22px;
+      --label:18px;
+      --sub:14px;
     }
+
     *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 92px;
+      padding-bottom: 96px;
     }
 
     .header{
@@ -40,7 +47,7 @@
       background:#fff;
       position:sticky;
       top:0;
-      z-index:50;
+      z-index:60;
       gap:8px;
     }
     .header-title{
@@ -63,6 +70,14 @@
       align-items:center;
       gap:8px;
     }
+    .header-home{
+      font-size:18px;
+      font-weight:900;
+      text-decoration:none;
+      color: var(--blue);
+      white-space:nowrap;
+    }
+
     .iconBtn{
       width:44px;height:44px;
       border-radius:14px;
@@ -71,26 +86,76 @@
       display:grid;
       place-items:center;
       cursor:pointer;
+      position:relative;
     }
     .iconBtn:active{ background:#f3f4f6; }
     .iconBtn svg{ width:22px;height:22px; }
-    .header-link{
-      font-size:18px;
-      font-weight:900;
-      text-decoration:none;
-      color: var(--blue);
-      white-space:nowrap;
-    }
 
-    .role-pill{
+    .badge{
+      position:absolute;
+      top:-6px; right:-6px;
+      min-width:22px;
+      height:22px;
+      padding:0 6px;
+      border-radius:999px;
+      background:#dc2626;
+      color:#fff;
+      display:none;
+      align-items:center;
+      justify-content:center;
       font-size:12px;
       font-weight:900;
+      border:2px solid #fff;
+    }
+
+    .role-switch{ display:flex; gap:4px; }
+    .role-switch button{
       border:1px solid var(--line);
-      padding:8px 10px;
-      border-radius:999px;
-      color:#374151;
       background:#fff;
+      padding:6px 10px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
       white-space:nowrap;
+    }
+    .role-switch button.active{
+      background: var(--primary);
+      color:#fff;
+      border-color: var(--primary);
+    }
+
+    .toggleGroup{ display:flex; align-items:center; gap:8px; }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      font-size:12px;
+      font-weight:900;
+      color:#374151;
+      white-space:nowrap;
+    }
+    .toggle input{ width:18px;height:18px; }
+
+    .stopBanner{
+      position:sticky;
+      top:64px;
+      z-index:55;
+      border-bottom:1px solid #fecaca;
+      background:#fff1f2;
+      color:#991b1b;
+      font-weight:900;
+      padding:10px 12px;
+      display:none;
+    }
+    .stopBanner .inner{
+      max-width: var(--max);
+      margin:0 auto;
+      text-align:center;
     }
 
     .wrap{
@@ -100,16 +165,6 @@
       display:flex;
       flex-direction:column;
       gap:12px;
-    }
-
-    .banner{
-      border:1px solid #fde68a;
-      background:#fffbeb;
-      color:#92400e;
-      border-radius:16px;
-      padding:12px 14px;
-      font-weight:900;
-      line-height:1.4;
     }
 
     .card{
@@ -133,6 +188,16 @@
       font-weight:900;
       color:#374151;
     }
+    .pill{
+      font-size:12px;
+      font-weight:800;
+      color: var(--muted);
+      border:1px solid var(--line);
+      background:#fff;
+      padding:8px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
 
     .list{ padding:12px; display:flex; flex-direction:column; gap:10px; }
     .row{
@@ -140,30 +205,66 @@
       border-radius:14px;
       padding:12px;
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
       gap:10px;
       background:#fff;
-      opacity:.8;
     }
-    .info{ min-width:0; }
+    .info{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
     .name{
-      font-size:16px;
+      font-size: var(--label);
       font-weight:900;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
     .sub{
-      margin-top:6px;
       font-size:12px;
       color: var(--muted);
       font-weight:800;
     }
-    .price{
-      font-weight:900;
-      white-space:nowrap;
+    .right{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+
+    .qty{
+      display:inline-flex;
+      align-items:center;
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      height:48px;
+      background:#fff;
     }
+    .qty button{
+      width:48px;
+      height:48px;
+      border:0;
+      background:#fff;
+      font-size:22px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .qty button:active{ background:#f3f4f6; }
+    .qty .n{
+      width:48px;
+      text-align:center;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .del{
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:18px;
+      cursor:pointer;
+    }
+    .del:active{ background:#fef2f2; border-color:#fecaca; }
 
     .empty{
       padding:14px 16px;
@@ -177,7 +278,8 @@
       background:#fff;
       border-top:1px solid var(--line);
       padding:12px 12px calc(12px + env(safe-area-inset-bottom));
-      z-index:60;
+      z-index:70;
+      display:none;
     }
     .bottomInner{
       max-width: var(--max);
@@ -192,45 +294,75 @@
       box-shadow: var(--shadow);
     }
     .bottomInner .t{ font-weight:900; color:#374151; }
-    .bottomInner .v{ font-weight:900; font-size:20px; }
+    .bottomInner .v{ font-weight:900; font-size:22px; }
+
+    /* STOP state */
+    .stopped .row{ opacity:.65; }
+    .stopped .qty{ pointer-events:none; opacity:.55; }
+    .stopped .del{ pointer-events:none; opacity:.55; }
   </style>
 </head>
 
 <body>
   <header class="header">
     <div class="header-left">
-      <button class="iconBtn" type="button" id="backBtn" aria-label="戻る">
+      <button class="iconBtn" id="backBtn" type="button" aria-label="戻る">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M15 6 9 12l6 6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
+
     <div class="header-title">カート</div>
+
     <div class="header-right">
-      <span class="role-pill" id="rolePill">—</span>
-      <a class="header-link" href="./history.html">履歴</a>
-      <a class="header-link" href="./index.html">ホーム</a>
+      <button class="iconBtn" id="cartBtn" type="button" aria-label="カート">
+        <span class="badge" id="cartBadge">0</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6h15l-2 9H8L6 6Z" stroke="#111827" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M6 6 5 3H2" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="9" cy="20" r="1.6" fill="#111827"/>
+          <circle cx="18" cy="20" r="1.6" fill="#111827"/>
+        </svg>
+      </button>
+
+      <div class="toggleGroup">
+        <div class="role-switch" aria-label="表示切替">
+          <button id="btnHost" type="button">喪主</button>
+          <button id="btnCompanion" type="button">同行者</button>
+        </div>
+
+        <label class="toggle" title="オーダー停止">
+          <span>停止</span>
+          <input id="stopToggle" type="checkbox" />
+        </label>
+      </div>
+
+      <a class="header-home" href="./history.html">履歴</a>
     </div>
   </header>
 
-  <div class="wrap">
-    <div class="banner">現在、オーダー機能は停止中です（カートは表示のみ）。</div>
+  <div class="stopBanner" id="stopBanner">
+    <div class="inner">オーダー停止中です（編集できません）</div>
+  </div>
 
+  <div class="wrap" id="appRoot">
     <section class="card">
       <div class="card-hd">
         <div class="h">カート内容</div>
-        <div class="role-pill" id="countPill">0点</div>
+        <div class="pill" id="countPill">0点</div>
       </div>
       <div class="list" id="cartList"></div>
     </section>
   </div>
 
-  <div class="bottomBar" id="bottomBar" style="display:none;">
+  <div class="bottomBar" id="bottomBar">
     <div class="bottomInner">
       <div>
         <div class="t">合計</div>
         <div class="v" id="total">¥0</div>
       </div>
+      <div class="pill">表示のみ</div>
     </div>
   </div>
 
@@ -247,16 +379,27 @@
     ];
 
     const LS_CART = "miniapp_cart";
-    const LS_ROLE = "miniapp_role"; // "host" | "companion"
+    const LS_ROLE = "miniapp_role";             // "host" | "companion"
+    const LS_ORDER_STOP = "miniapp_order_stop"; // "1" stop | "0" run
+
+    if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
+    if(localStorage.getItem(LS_ORDER_STOP) == null) localStorage.setItem(LS_ORDER_STOP, "1");
+
+    const appRoot = document.getElementById("appRoot");
+    const stopBanner = document.getElementById("stopBanner");
 
     const backBtn = document.getElementById("backBtn");
-    const cartList = document.getElementById("cartList");
-    const totalEl = document.getElementById("total");
-    const countPill = document.getElementById("countPill");
-    const rolePill = document.getElementById("rolePill");
-    const bottomBar = document.getElementById("bottomBar");
+    const cartBtn = document.getElementById("cartBtn");
+    const cartBadge = document.getElementById("cartBadge");
 
-    backBtn.addEventListener("click", ()=>{ location.href = "./order.html"; });
+    const btnHost = document.getElementById("btnHost");
+    const btnCompanion = document.getElementById("btnCompanion");
+    const stopToggle = document.getElementById("stopToggle");
+
+    const cartList = document.getElementById("cartList");
+    const countPill = document.getElementById("countPill");
+    const totalEl = document.getElementById("total");
+    const bottomBar = document.getElementById("bottomBar");
 
     function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
     function escapeHtml(s){
@@ -267,6 +410,7 @@
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
     }
+
     function loadCart(){
       try{
         const raw = localStorage.getItem(LS_CART);
@@ -277,22 +421,78 @@
         return {};
       }
     }
-    function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
+    function persistCart(cart){
+      localStorage.setItem(LS_CART, JSON.stringify(cart));
+    }
 
-    function calc(){
+    function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
+    function setRole(role){ localStorage.setItem(LS_ROLE, role); renderAll(); }
+
+    function isStopped(){ return (localStorage.getItem(LS_ORDER_STOP) || "1") === "1"; }
+    function setStopped(v){ localStorage.setItem(LS_ORDER_STOP, v ? "1" : "0"); renderAll(); }
+
+    backBtn.addEventListener("click", ()=> location.href = "./order.html");
+    cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
+
+    btnHost.addEventListener("click", ()=>setRole("host"));
+    btnCompanion.addEventListener("click", ()=>setRole("companion"));
+    stopToggle.addEventListener("change", ()=>setStopped(stopToggle.checked));
+
+    function cartCount(cart){
+      return Object.values(cart).reduce((a,b)=>a+Number(b||0),0);
+    }
+    function cartTotal(cart){
+      let sum=0;
+      for(const [id, qty] of Object.entries(cart)){
+        const p = PRODUCTS.find(x=>x.id===id);
+        if(p) sum += p.price * Number(qty||0);
+      }
+      return sum;
+    }
+
+    function renderHeader(cart){
+      const role = getRole();
+      const host = role === "host";
+
+      btnHost.classList.toggle("active", host);
+      btnCompanion.classList.toggle("active", !host);
+
+      stopToggle.checked = isStopped();
+      stopBanner.style.display = isStopped() ? "" : "none";
+      appRoot.classList.toggle("stopped", isStopped());
+
+      // cart badge
+      const c = cartCount(cart);
+      if(c>0){
+        cartBadge.style.display = "inline-flex";
+        cartBadge.textContent = String(c);
+      }else{
+        cartBadge.style.display = "none";
+      }
+
+      // bottom total (host only)
+      bottomBar.style.display = host ? "" : "none";
+    }
+
+    function renderCart(){
       const cart = loadCart();
+      renderHeader(cart);
+
       const entries = Object.entries(cart).filter(([_,q])=>Number(q||0)>0);
 
-      let count = 0;
-      let sum = 0;
+      countPill.textContent = `${cartCount(cart)}点`;
+      totalEl.textContent = yen(cartTotal(cart));
 
-      const rows = entries.map(([id, qty])=>{
+      if(entries.length === 0){
+        cartList.innerHTML = `<div class="empty">カートは空です。</div>`;
+        return;
+      }
+
+      cartList.innerHTML = entries.map(([id, qty])=>{
         const p = PRODUCTS.find(x=>x.id===id);
         if(!p) return "";
         const q = Number(qty||0);
         const sub = p.price * q;
-        count += q;
-        sum += sub;
 
         return `
           <div class="row">
@@ -300,26 +500,47 @@
               <div class="name">${escapeHtml(p.name)}</div>
               <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
             </div>
-            <div class="price">${yen(sub)}</div>
+            <div class="right">
+              <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
+                <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
+                <div class="n">${q}</div>
+                <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
+              </div>
+              <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
+            </div>
           </div>
         `;
       }).join("");
 
-      countPill.textContent = `${count}点`;
-      totalEl.textContent = yen(sum);
+      // events
+      cartList.querySelectorAll("button[data-act]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          if(isStopped()) return;
+          const id = btn.getAttribute("data-id");
+          const act = btn.getAttribute("data-act");
+          const c = loadCart();
+          const cur = Number(c[id] || 0);
+          const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
+          if(next<=0) delete c[id]; else c[id]=next;
+          persistCart(c);
+          renderCart();
+        });
+      });
 
-      if(entries.length === 0){
-        cartList.innerHTML = `<div class="empty">カートは空です。</div>`;
-      }else{
-        cartList.innerHTML = rows;
-      }
-
-      const role = getRole();
-      rolePill.textContent = (role === "host") ? "喪主" : "同行者";
-      bottomBar.style.display = (role === "host") ? "" : "none";
+      cartList.querySelectorAll("button[data-del]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          if(isStopped()) return;
+          const id = btn.getAttribute("data-del");
+          const c = loadCart();
+          delete c[id];
+          persistCart(c);
+          renderCart();
+        });
+      });
     }
 
-    calc();
+    function renderAll(){ renderCart(); }
+    renderAll();
   </script>
 </body>
 </html>
