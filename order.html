@@ -199,7 +199,7 @@
       white-space:nowrap;
     }
 
-    /* Settlement big QR */
+    /* Settlement/Invite QR */
     .pay{ padding:12px; display:flex; flex-direction:column; gap:10px; }
     .payBox{
       border:1px solid var(--line);
@@ -230,7 +230,9 @@
       place-items:center;
       box-shadow: 0 10px 28px rgba(17,24,39,.06);
     }
+    .qr.small{ width:240px; height:240px; }
     .qr svg{ width:248px; height:248px; display:block; }
+    .qr.small svg{ width:220px; height:220px; }
     .smallNote{
       padding:10px 16px 14px;
       font-size:12px;
@@ -239,11 +241,21 @@
       line-height:1.4;
       text-align:center;
     }
+    .urlBox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:12px;
+      color:#374151;
+      font-weight:800;
+      background:#fff;
+      word-break:break-all;
+    }
 
     /* Popular sticky */
     .stickyPopular{
       position:sticky;
-      top: calc(64px + 42px); /* header + banner roughly */
+      top: calc(64px + 42px);
       z-index:40;
     }
 
@@ -308,11 +320,7 @@
       flex: 0 0 auto;
     }
 
-    .qtyBox{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
+    .qtyBox{ display:flex; align-items:center; gap:8px; }
     .qty{
       display:inline-flex;
       align-items:center;
@@ -414,7 +422,7 @@
           <button id="btnCompanion" type="button">同行者</button>
         </div>
 
-        <!-- ★精算確定：ここがONなら喪主/同行者どちらもロック -->
+        <!-- 精算確定：ONなら喪主/同行者どちらも購入操作ロック -->
         <label class="toggle" title="精算確定">
           <span>精算確定</span>
           <input id="settleToggle" type="checkbox" />
@@ -475,6 +483,47 @@
       <div class="list" id="productList"></div>
       <div class="smallNote">※数量を入れて「カートに入れる」を押してください</div>
     </section>
+
+    <!-- ★同行者招待QR（商品一覧の下） -->
+    <section class="card" id="inviteSection">
+      <div class="card-hd">
+        <div class="h">同行者に共有（QR）</div>
+        <div class="pill">喪主のみ</div>
+      </div>
+
+      <div class="pay">
+        <div class="payBox">
+          <div class="smallNote" style="padding:0;text-align:left;">
+            同行者がこのQRを読み込むと、喪主のオーダーに紐づいた購入画面が開く想定です（画面モック）。
+          </div>
+
+          <div class="qrWrap">
+            <div class="qr small" aria-label="同行者招待QRコード">
+              <div id="qrInvite"></div>
+            </div>
+          </div>
+
+          <div class="smallNote">読み取り後に開くURL（モック）</div>
+          <div class="urlBox" id="inviteUrlBox"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 同行者側の案内（招待QRは見せない） -->
+    <section class="card" id="companionHint" style="display:none;">
+      <div class="card-hd">
+        <div class="h">同行者の方へ</div>
+        <div class="pill">案内</div>
+      </div>
+      <div class="pay">
+        <div class="payBox">
+          <div class="smallNote" style="padding:0;text-align:left;">
+            喪主が表示している「同行者用QR」を読み取って、この画面を開いてください。<br>
+            （読み取り後は、喪主のオーダーに紐づく想定です）
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- 喪主のみ：画面下部に精算金額合計（表示のみ） -->
@@ -506,13 +555,17 @@
     ];
 
     // ===== Storage Keys =====
-    const LS_CART = "miniapp_cart";       // { [id]: qty }
+    const LS_CART = "miniapp_cart";
     const LS_ROLE = "miniapp_role";       // "host" | "companion"
-    const LS_SETTLED = "miniapp_settled"; // "1" settled | "0" not
+    const LS_SETTLED = "miniapp_settled"; // "1" | "0"
+    const LS_HOST_GROUP = "miniapp_host_group"; // 招待用（画面モック）
 
     // defaults
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
     if(localStorage.getItem(LS_SETTLED) == null) localStorage.setItem(LS_SETTLED, "0");
+    if(!localStorage.getItem(LS_HOST_GROUP)){
+      localStorage.setItem(LS_HOST_GROUP, "G-" + Math.random().toString(36).slice(2,10));
+    }
 
     // ===== Elements =====
     const appRoot = document.getElementById("appRoot");
@@ -535,6 +588,12 @@
 
     const bottomBar = document.getElementById("bottomBar");
     const bottomTotal = document.getElementById("bottomTotal");
+
+    // invite
+    const inviteSection = document.getElementById("inviteSection");
+    const qrInvite = document.getElementById("qrInvite");
+    const inviteUrlBox = document.getElementById("inviteUrlBox");
+    const companionHint = document.getElementById("companionHint");
 
     // ===== State =====
     let cart = loadCart();
@@ -588,11 +647,7 @@
       localStorage.setItem(LS_SETTLED, v ? "1" : "0");
       renderAll();
     }
-
-    function isLocked(){
-      // ★喪主・同行者どちらでも、精算確定ONならロック
-      return isSettled();
-    }
+    function isLocked(){ return isSettled(); }
 
     // ===== Fake QR =====
     function hash(str){
@@ -603,10 +658,10 @@
       }
       return (h>>>0);
     }
-    function renderFakeQR(payload){
+    function renderFakeQR(payload, sizePx=248){
       const seed = hash(payload);
       const size = 21;
-      const cell = 248 / size;
+      const cell = sizePx / size;
       let cells = "";
 
       function rect(x,y){
@@ -638,29 +693,25 @@
       finder(0,0); finder(size-7,0); finder(0,size-7);
 
       return `
-        <svg viewBox="0 0 248 248" width="248" height="248" role="img" aria-label="QR">
-          <rect x="0" y="0" width="248" height="248" fill="#fff"/>
+        <svg viewBox="0 0 ${sizePx} ${sizePx}" width="${sizePx}" height="${sizePx}" role="img" aria-label="QR">
+          <rect x="0" y="0" width="${sizePx}" height="${sizePx}" fill="#fff"/>
           ${cells}
         </svg>
       `;
     }
 
-    // ===== Navigation / UI events =====
+    // ===== Events =====
     cartBtn.addEventListener("click", ()=>{ location.href = "./cart.html"; });
     btnHost.addEventListener("click", ()=>setRole("host"));
     btnCompanion.addEventListener("click", ()=>setRole("companion"));
     settleToggle.addEventListener("change", ()=> setSettled(settleToggle.checked));
     searchInput.addEventListener("input", ()=> renderProducts());
 
-    // ★イベント取りこぼし防止：イベント委譲で＋/−/追加を確実に動かす
+    // クリック取りこぼし防止（イベント委譲）
     document.addEventListener("click", (e)=>{
       const t = e.target;
       if(!(t instanceof Element)) return;
-
-      // ロック中は一切操作不可
-      if(isLocked()){
-        return;
-      }
+      if(isLocked()) return;
 
       const act = t.getAttribute("data-act");
       const add = t.getAttribute("data-add");
@@ -671,7 +722,6 @@
         changePending(id, act === "plus" ? 1 : -1);
         return;
       }
-
       if(add){
         addToCart(add);
         return;
@@ -687,7 +737,6 @@
       cart[id] = Number(cart[id] || 0) + qty;
       persistCart();
 
-      // 入力数量リセット
       pendingQty[id] = 0;
       renderAll();
     }
@@ -697,22 +746,13 @@
       const cur = Number(pendingQty[id] || 0);
       const next = Math.max(0, cur + delta);
       pendingQty[id] = next;
-      // 部分更新
-      updateRowQty(id);
-      updateAddButtons(id);
-    }
 
-    function updateRowQty(id){
-      // 同一商品が人気枠/一覧枠に両方あるケースに備えて複数更新
+      // 人気枠/一覧枠どちらにも同じIDが出るので両方更新
       document.querySelectorAll(`[data-row="${id}"] .n`).forEach(el=>{
-        el.textContent = String(Number(pendingQty[id] || 0));
+        el.textContent = String(next);
       });
-    }
-    function updateAddButtons(id){
-      const locked = isLocked();
-      const q = Number(pendingQty[id] || 0);
       document.querySelectorAll(`button[data-add="${id}"]`).forEach(btn=>{
-        btn.disabled = locked || q <= 0;
+        btn.disabled = isLocked() || next <= 0;
       });
     }
 
@@ -726,7 +766,6 @@
 
       settleToggle.checked = isSettled();
 
-      // lock UI
       const locked = isLocked();
       appRoot.classList.toggle("locked", locked);
       lockBanner.style.display = locked ? "" : "none";
@@ -750,14 +789,12 @@
       payTotalEl.textContent = yen(total);
       bottomTotal.textContent = yen(total);
 
-      // 喪主のみ：下部合計バー表示
       bottomBar.style.display = host ? "" : "none";
 
-      // QR: 喪主 + 精算確定のみ表示
       qrSection.style.display = (host && settled) ? "" : "none";
       if(host && settled){
         const payId = `PAY|TOTAL=${total}|DATE=${new Date().toISOString().slice(0,10)}`;
-        qrHost.innerHTML = renderFakeQR(payId);
+        qrHost.innerHTML = renderFakeQR(payId, 248);
       }else{
         qrHost.innerHTML = "";
       }
@@ -798,41 +835,53 @@
     function renderProducts(){
       const kw = (searchInput.value || "").trim().toLowerCase();
 
-      // popularは別枠なので除外
       const list = PRODUCTS
         .filter(p => !POPULAR_FIXED.some(x=>x.id===p.id))
         .filter(p => !kw || p.name.toLowerCase().includes(kw));
 
       productListEl.innerHTML = list.map(p => productRowHtml(p, false)).join("");
-
-      // ロック時の入力無効（念のため）
       searchInput.disabled = isLocked();
     }
 
-    function syncCartFromStorage(){
+    function renderInvite(){
+      const role = getRole();
+      const host = role === "host";
+
+      inviteSection.style.display = host ? "" : "none";
+      companionHint.style.display = host ? "none" : "";
+
+      if(!host) return;
+
+      // 画面モック：グループIDを含んだ招待URLを生成してQR表示
+      const gid = localStorage.getItem(LS_HOST_GROUP);
+      const url = new URL(location.href);
+      url.searchParams.set("inviteGroup", gid); // 同行者が開いたらこのパラメータで紐づける想定
+
+      // URLは長くなりがちなので「見た目だけ」出す
+      const inviteUrl = url.toString();
+
+      qrInvite.innerHTML = renderFakeQR(inviteUrl, 220);
+      inviteUrlBox.textContent = inviteUrl;
+    }
+
+    function syncCart(){
       cart = loadCart();
     }
 
     function renderAll(){
-      syncCartFromStorage();
+      syncCart();
       renderHeader();
       renderSettlement();
       renderPopular();
       renderProducts();
+      renderInvite();
     }
 
-    // 初期描画
+    // 戻ってきた時にも最新反映
+    window.addEventListener("pageshow", () => renderAll());
+    document.addEventListener("visibilitychange", () => { if(!document.hidden) renderAll(); });
+
     renderAll();
-    // 戻ってきた時（履歴戻り/キャッシュ復帰）にも必ず最新のカートを反映
-window.addEventListener("pageshow", () => {
-  renderAll();
-});
-
-// アプリが前面に戻った時にも反映（WebView/タブ切替対策）
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) renderAll();
-});
-
   </script>
 </body>
 </html>
