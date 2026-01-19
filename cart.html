@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>オーダー（カート）</title>
+  <title>カート</title>
 
   <style>
     :root{
@@ -19,8 +19,9 @@
       --primary:#111827;
       --blue:#2563eb;
       --danger:#dc2626;
+      --ok:#16a34a;
 
-      --tap:56px;
+      --tap:60px;
       --max:520px;
 
       --title:22px;
@@ -34,9 +35,10 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 96px;
+      padding-bottom: 24px;
     }
 
+    /* ===== Header ===== */
     .header{
       height:64px;
       display:grid;
@@ -50,18 +52,18 @@
       z-index:60;
       gap:8px;
     }
+    .header-left{
+      grid-column:1;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
     .header-title{
       grid-column:2;
       font-size: var(--title);
       font-weight: 900;
       text-align:center;
       letter-spacing:.02em;
-    }
-    .header-left{
-      grid-column:1;
-      display:flex;
-      align-items:center;
-      gap:8px;
     }
     .header-right{
       grid-column:3;
@@ -70,14 +72,25 @@
       align-items:center;
       gap:8px;
     }
-    .header-home{
-      font-size:18px;
+
+    /* Back big button (分かりやすく) */
+    .backBtn{
+      height:44px;
+      padding:0 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
       font-weight:900;
-      text-decoration:none;
-      color: var(--blue);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
       white-space:nowrap;
     }
+    .backBtn:active{ background:#f3f4f6; }
+    .backBtn svg{ width:18px; height:18px; }
 
+    /* Cart icon + badge */
     .iconBtn{
       width:44px;height:44px;
       border-radius:14px;
@@ -90,7 +103,6 @@
     }
     .iconBtn:active{ background:#f3f4f6; }
     .iconBtn svg{ width:22px;height:22px; }
-
     .badge{
       position:absolute;
       top:-6px; right:-6px;
@@ -108,6 +120,7 @@
       border:2px solid #fff;
     }
 
+    /* Role switch（カートは共有だが表示上残す） */
     .role-switch{ display:flex; gap:4px; }
     .role-switch button{
       border:1px solid var(--line);
@@ -123,39 +136,6 @@
       background: var(--primary);
       color:#fff;
       border-color: var(--primary);
-    }
-
-    .toggleGroup{ display:flex; align-items:center; gap:8px; }
-    .toggle{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff;
-      font-size:12px;
-      font-weight:900;
-      color:#374151;
-      white-space:nowrap;
-    }
-    .toggle input{ width:18px;height:18px; }
-
-    .stopBanner{
-      position:sticky;
-      top:64px;
-      z-index:55;
-      border-bottom:1px solid #fecaca;
-      background:#fff1f2;
-      color:#991b1b;
-      font-weight:900;
-      padding:10px 12px;
-      display:none;
-    }
-    .stopBanner .inner{
-      max-width: var(--max);
-      margin:0 auto;
-      text-align:center;
     }
 
     .wrap{
@@ -267,49 +247,81 @@
     .del:active{ background:#fef2f2; border-color:#fecaca; }
 
     .empty{
-      padding:14px 16px;
+      padding:16px;
       color: var(--muted);
       font-weight:900;
+      text-align:center;
     }
 
-    .bottomBar{
-      position:fixed;
-      left:0; right:0; bottom:0;
-      background:#fff;
+    .sum{
+      padding:14px 16px;
       border-top:1px solid var(--line);
-      padding:12px 12px calc(12px + env(safe-area-inset-bottom));
-      z-index:70;
-      display:none;
-    }
-    .bottomInner{
-      max-width: var(--max);
-      margin:0 auto;
+      background: var(--soft);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      border:1px solid var(--line);
+      font-weight:900;
+    }
+    .sum .total{ font-size:20px; }
+
+    .actions{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .btn{
+      height: var(--tap);
       border-radius:18px;
-      padding:12px 14px;
+      border:0;
+      font-size:18px;
+      font-weight:900;
+      cursor:pointer;
       box-shadow: var(--shadow);
     }
-    .bottomInner .t{ font-weight:900; color:#374151; }
-    .bottomInner .v{ font-weight:900; font-size:22px; }
+    .btn.secondary{
+      background:#fff;
+      color: var(--text);
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+    .btn.danger{
+      background:#fff;
+      color: var(--danger);
+      border:1px solid #fecaca;
+      box-shadow:none;
+    }
+    .btn.primary{
+      background: var(--blue);
+      color:#fff;
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
 
-    /* STOP state */
-    .stopped .row{ opacity:.65; }
-    .stopped .qty{ pointer-events:none; opacity:.55; }
-    .stopped .del{ pointer-events:none; opacity:.55; }
+    /* 高齢者向け：履歴ボタンを大きく */
+    .historyBtn{
+      height:72px;
+      border-radius:22px;
+      font-size:22px;
+      font-weight:900;
+    }
   </style>
 </head>
 
 <body>
   <header class="header">
     <div class="header-left">
-      <button class="iconBtn" id="backBtn" type="button" aria-label="戻る">
+      <!-- ★戻るを分かりやすく：矢印＋「オーダーに戻る」 -->
+      <button class="backBtn" id="backBtn" type="button" aria-label="オーダーに戻る">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M15 6 9 12l6 6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
+        オーダーに戻る
       </button>
     </div>
 
@@ -326,47 +338,39 @@
         </svg>
       </button>
 
-      <div class="toggleGroup">
-        <div class="role-switch" aria-label="表示切替">
-          <button id="btnHost" type="button">喪主</button>
-          <button id="btnCompanion" type="button">同行者</button>
-        </div>
-
-        <label class="toggle" title="オーダー停止">
-          <span>停止</span>
-          <input id="stopToggle" type="checkbox" />
-        </label>
+      <div class="role-switch" aria-label="表示切替">
+        <button id="btnHost" type="button">喪主</button>
+        <button id="btnCompanion" type="button">同行者</button>
       </div>
-
-      <a class="header-home" href="./history.html">履歴</a>
     </div>
   </header>
 
-  <div class="stopBanner" id="stopBanner">
-    <div class="inner">オーダー停止中です（編集できません）</div>
-  </div>
-
-  <div class="wrap" id="appRoot">
+  <div class="wrap">
     <section class="card">
       <div class="card-hd">
         <div class="h">カート内容</div>
         <div class="pill" id="countPill">0点</div>
       </div>
+
       <div class="list" id="cartList"></div>
+
+      <div class="sum">
+        <div>合計</div>
+        <div class="total" id="total">¥0</div>
+      </div>
+
+      <div class="actions">
+        <!-- 全削除 -->
+        <button class="btn danger" id="clearAllBtn" type="button">カートをすべて削除</button>
+
+        <!-- 高齢者向け：大きい履歴ボタン（カート内容の下） -->
+        <button class="btn primary historyBtn" id="historyBtn" type="button">購入履歴を見る</button>
+      </div>
     </section>
   </div>
 
-  <div class="bottomBar" id="bottomBar">
-    <div class="bottomInner">
-      <div>
-        <div class="t">合計</div>
-        <div class="v" id="total">¥0</div>
-      </div>
-      <div class="pill">表示のみ</div>
-    </div>
-  </div>
-
   <script>
+    // ===== 商品マスタ（order.html と揃える） =====
     const PRODUCTS = [
       { id:"p_beer", name:"瓶ビール", price:600 },
       { id:"p_tea",  name:"お茶（ペットボトル）", price:160 },
@@ -378,29 +382,27 @@
       { id:"s_choco", name:"チョコレート", price:220 },
     ];
 
-    const LS_CART = "miniapp_cart";
-    const LS_ROLE = "miniapp_role";             // "host" | "companion"
-    const LS_ORDER_STOP = "miniapp_order_stop"; // "1" stop | "0" run
+    const LS_CART = "miniapp_cart";   // ★喪主/同行者で共有（1つだけ）
+    const LS_ROLE = "miniapp_role";   // 表示切替（カートは共有だがUIの統一用）
 
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
-    if(localStorage.getItem(LS_ORDER_STOP) == null) localStorage.setItem(LS_ORDER_STOP, "1");
 
-    const appRoot = document.getElementById("appRoot");
-    const stopBanner = document.getElementById("stopBanner");
-
+    // ===== Elements =====
     const backBtn = document.getElementById("backBtn");
     const cartBtn = document.getElementById("cartBtn");
     const cartBadge = document.getElementById("cartBadge");
 
     const btnHost = document.getElementById("btnHost");
     const btnCompanion = document.getElementById("btnCompanion");
-    const stopToggle = document.getElementById("stopToggle");
 
     const cartList = document.getElementById("cartList");
     const countPill = document.getElementById("countPill");
     const totalEl = document.getElementById("total");
-    const bottomBar = document.getElementById("bottomBar");
 
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const historyBtn = document.getElementById("historyBtn");
+
+    // ===== Utils =====
     function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
     function escapeHtml(s){
       return String(s)
@@ -421,22 +423,9 @@
         return {};
       }
     }
-    function persistCart(cart){
+    function saveCart(cart){
       localStorage.setItem(LS_CART, JSON.stringify(cart));
     }
-
-    function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
-    function setRole(role){ localStorage.setItem(LS_ROLE, role); renderAll(); }
-
-    function isStopped(){ return (localStorage.getItem(LS_ORDER_STOP) || "1") === "1"; }
-    function setStopped(v){ localStorage.setItem(LS_ORDER_STOP, v ? "1" : "0"); renderAll(); }
-
-    backBtn.addEventListener("click", ()=> location.href = "./order.html");
-    cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
-
-    btnHost.addEventListener("click", ()=>setRole("host"));
-    btnCompanion.addEventListener("click", ()=>setRole("companion"));
-    stopToggle.addEventListener("change", ()=>setStopped(stopToggle.checked));
 
     function cartCount(cart){
       return Object.values(cart).reduce((a,b)=>a+Number(b||0),0);
@@ -450,97 +439,120 @@
       return sum;
     }
 
+    function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
+    function setRole(role){ localStorage.setItem(LS_ROLE, role); render(); }
+
+    // ===== Navigation =====
+    backBtn.addEventListener("click", ()=> location.href = "./order.html");
+    cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
+    historyBtn.addEventListener("click", ()=> location.href = "./history.html");
+
+    btnHost.addEventListener("click", ()=>setRole("host"));
+    btnCompanion.addEventListener("click", ()=>setRole("companion"));
+
+    // ===== 全削除 =====
+    clearAllBtn.addEventListener("click", ()=>{
+      const empty = {};
+      saveCart(empty);
+      render();
+    });
+
+    // ===== イベント委譲（数量＋/−/削除の取りこぼし防止） =====
+    document.addEventListener("click", (e)=>{
+      const t = e.target;
+      if(!(t instanceof Element)) return;
+
+      const act = t.getAttribute("data-act");
+      const del = t.getAttribute("data-del");
+
+      if(act){
+        const id = t.getAttribute("data-id");
+        if(!id) return;
+        const cart = loadCart();
+        const cur = Number(cart[id] || 0);
+        const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
+        if(next <= 0) delete cart[id];
+        else cart[id] = next;
+        saveCart(cart);
+        render();
+        return;
+      }
+
+      if(del){
+        const cart = loadCart();
+        delete cart[del];
+        saveCart(cart);
+        render();
+        return;
+      }
+    });
+
+    // ===== Render =====
     function renderHeader(cart){
       const role = getRole();
       const host = role === "host";
-
       btnHost.classList.toggle("active", host);
       btnCompanion.classList.toggle("active", !host);
 
-      stopToggle.checked = isStopped();
-      stopBanner.style.display = isStopped() ? "" : "none";
-      appRoot.classList.toggle("stopped", isStopped());
-
-      // cart badge
       const c = cartCount(cart);
-      if(c>0){
+      if(c > 0){
         cartBadge.style.display = "inline-flex";
         cartBadge.textContent = String(c);
       }else{
         cartBadge.style.display = "none";
       }
-
-      // bottom total (host only)
-      bottomBar.style.display = host ? "" : "none";
     }
 
-    function renderCart(){
+    function render(){
       const cart = loadCart();
       renderHeader(cart);
 
-      const entries = Object.entries(cart).filter(([_,q])=>Number(q||0)>0);
+      const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
 
-      countPill.textContent = `${cartCount(cart)}点`;
+      const count = cartCount(cart);
+      countPill.textContent = `${count}点`;
       totalEl.textContent = yen(cartTotal(cart));
 
+      // 空表示
       if(entries.length === 0){
-        cartList.innerHTML = `<div class="empty">カートは空です。</div>`;
-        return;
-      }
+        cartList.innerHTML = `<div class="empty">カートは、空になります</div>`;
+        clearAllBtn.disabled = true;
+      }else{
+        clearAllBtn.disabled = false;
 
-      cartList.innerHTML = entries.map(([id, qty])=>{
-        const p = PRODUCTS.find(x=>x.id===id);
-        if(!p) return "";
-        const q = Number(qty||0);
-        const sub = p.price * q;
+        cartList.innerHTML = entries.map(([id, qty])=>{
+          const p = PRODUCTS.find(x=>x.id===id);
+          if(!p) return "";
+          const q = Number(qty||0);
+          const sub = p.price * q;
 
-        return `
-          <div class="row">
-            <div class="info">
-              <div class="name">${escapeHtml(p.name)}</div>
-              <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
-            </div>
-            <div class="right">
-              <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
-                <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
-                <div class="n">${q}</div>
-                <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
+          return `
+            <div class="row">
+              <div class="info">
+                <div class="name">${escapeHtml(p.name)}</div>
+                <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
               </div>
-              <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
+
+              <div class="right">
+                <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
+                  <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
+                  <div class="n">${q}</div>
+                  <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
+                </div>
+
+                <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
+              </div>
             </div>
-          </div>
-        `;
-      }).join("");
-
-      // events
-      cartList.querySelectorAll("button[data-act]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          if(isStopped()) return;
-          const id = btn.getAttribute("data-id");
-          const act = btn.getAttribute("data-act");
-          const c = loadCart();
-          const cur = Number(c[id] || 0);
-          const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
-          if(next<=0) delete c[id]; else c[id]=next;
-          persistCart(c);
-          renderCart();
-        });
-      });
-
-      cartList.querySelectorAll("button[data-del]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          if(isStopped()) return;
-          const id = btn.getAttribute("data-del");
-          const c = loadCart();
-          delete c[id];
-          persistCart(c);
-          renderCart();
-        });
-      });
+          `;
+        }).join("");
+      }
     }
 
-    function renderAll(){ renderCart(); }
-    renderAll();
+    // 戻ってきた時（履歴戻り/キャッシュ復帰）にも必ず最新反映
+    window.addEventListener("pageshow", () => render());
+    document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
+
+    render();
   </script>
 </body>
 </html>
