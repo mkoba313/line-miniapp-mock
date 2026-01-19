@@ -2,13 +2,9 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover" />
   <title>火葬申込み</title>
   <style>
-      *, *::before, *::after{
-        box-sizing: border-box;
-      }
-
     :root{
       --bg:#ffffff;
       --text:#111827;
@@ -21,6 +17,8 @@
       --radius:16px;
       --font: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", Roboto, Arial, sans-serif;
     }
+    * , *::before, *::after{ box-sizing:border-box; }
+
     body{
       margin:0;
       background:var(--bg);
@@ -50,6 +48,7 @@
       font-weight:800;
       font-size:18px;
       letter-spacing:.02em;
+      white-space:nowrap;
     }
     .title{
       font-weight:800;
@@ -81,6 +80,7 @@
       margin:12px 0 6px 0;
       font-size:16px;
     }
+
     input[type="text"], input[type="tel"]{
       display:block;
       width:100%;
@@ -92,15 +92,68 @@
       outline:none;
       -webkit-appearance:none;
       appearance:none;
-      box-sizing:border-box; /* ←これが効く */
+      box-sizing:border-box;
     }
     input[type="text"]:focus, input[type="tel"]:focus{
       border-color:#9ca3af;
     }
+
     .note{
       color:var(--muted);
       font-size:14px;
       margin-top:6px;
+    }
+
+    /* ===== 同行者選択（必須） ===== */
+    .choice-wrap{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .choice-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .choice{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px 12px;
+      cursor:pointer;
+      user-select:none;
+      background:#fff;
+    }
+    .choice input{
+      width:24px;
+      height:24px;
+      margin:0;
+      accent-color:#111827;
+      flex:0 0 auto;
+    }
+    .choice .c-main{
+      font-size:17px;
+      font-weight:900;
+      line-height:1.2;
+    }
+    .choice .c-sub{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:800;
+      margin-top:4px;
+      line-height:1.5;
+    }
+    .warn{
+      margin-top:8px;
+      color:#b45309;
+      font-size:13px;
+      font-weight:900;
+      display:none;
     }
 
     details{
@@ -195,18 +248,6 @@
       background:#d1d5db;
       color:#6b7280;
     }
-    .link-row{
-      display:flex;
-      justify-content:center;
-      gap:14px;
-      flex-wrap:wrap;
-      margin-top:8px;
-    }
-    a{
-      color:#111827;
-      font-weight:800;
-      text-decoration:underline;
-    }
   </style>
 </head>
 
@@ -221,7 +262,7 @@
 
 <main>
   <form id="registerForm" class="card" onsubmit="return false;">
-    <h2 class="section-title">火葬申込み</h2>
+    <h2 class="section-title">会員登録（火葬申込み）</h2>
 
     <label for="name">申込者氏名（必須）</label>
     <input id="name" name="name" type="text" placeholder="例：山田 太郎" autocomplete="name" required />
@@ -231,6 +272,34 @@
 
     <label for="address">住所（必須）</label>
     <input id="address" name="address" type="text" placeholder="例：東京都〇〇区…" autocomplete="street-address" required />
+
+    <!-- ✅ 追加：同行者の有無（必須） -->
+    <div class="choice-wrap" aria-label="同行者の選択（必須）">
+      <label style="margin:0;">同行者（必須）</label>
+      <div class="note" style="margin:6px 0 0;">
+        ※どちらかを必ず選択してください（未選択のまま登録はできません）
+      </div>
+
+      <div class="choice-grid">
+        <label class="choice" for="companionYes">
+          <input id="companionYes" type="radio" name="companion" value="yes" />
+          <div>
+            <div class="c-main">同行者がいる</div>
+            <div class="c-sub">当日、同伴される方がいる場合はこちら</div>
+          </div>
+        </label>
+
+        <label class="choice" for="companionNo">
+          <input id="companionNo" type="radio" name="companion" value="no" />
+          <div>
+            <div class="c-main">同行者はいない</div>
+            <div class="c-sub">当日、同伴される方がいない場合はこちら</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="warn" id="companionWarn">※同行者の有無を選択してください。</div>
+    </div>
 
     <p class="note">※入力項目は今後増える可能性があります。</p>
   </form>
@@ -253,7 +322,8 @@
     <details open>
       <summary>
         <div class="summary-row">
-          <span>火葬の規約</span>
+          <span>火葬の規約（必須）</span>
+          <span class="badge">必須</span>
         </div>
       </summary>
 
@@ -303,7 +373,8 @@
     <details>
       <summary>
         <div class="summary-row">
-          <span>葬儀ミニアプリ利用の規約</span>
+          <span>葬儀ミニアプリ利用の規約（アプリ機能）</span>
+          <span class="badge badge-gray">アプリ</span>
         </div>
       </summary>
 
@@ -353,8 +424,8 @@
   </div>
 
   <div class="card cta">
-    <button id="submitBtn" disabled>登録</button>
-    <p class="note" style="margin:0;">※「登録」は、2つの規約への同意がそろった時点で押せます。</p>
+    <button id="submitBtn" type="button" disabled>登録</button>
+    <p class="note" style="margin:0;">※「登録」は、同行者選択と2つの規約への同意がそろった時点で押せます。</p>
   </div>
 </main>
 
@@ -372,6 +443,10 @@
 
   const submitBtn = document.getElementById('submitBtn');
 
+  // ✅ 同行者必須
+  const companionRadios = Array.from(document.querySelectorAll('input[name="companion"]'));
+  const companionWarn = document.getElementById('companionWarn');
+
   // state
   let cremationUnlockedByScroll = false;
   let miniappUnlockedByScroll = false;
@@ -380,15 +455,22 @@
     return el.scrollTop + el.clientHeight >= el.scrollHeight - 5;
   }
 
+  function isCompanionSelected(){
+    return companionRadios.some(r => r.checked);
+  }
+
   function updateButtonState() {
-    // 「すべて同意」にチェックが入った場合も、内部的に個別チェックがONになる設計
-    const ok = cremationAgree.checked && miniappAgree.checked;
-    submitBtn.disabled = !ok;
+    const agreed = cremationAgree.checked && miniappAgree.checked;
+    const companionOk = isCompanionSelected();
+
+    // 未選択なら警告（押し間違い防止）
+    companionWarn.style.display = companionOk ? "none" : "block";
+
+    submitBtn.disabled = !(agreed && companionOk);
   }
 
   function syncMasterFromIndividuals() {
     const both = cremationAgree.checked && miniappAgree.checked;
-    // 両方チェックなら master もON、それ以外はOFF（今回は単純に）
     allAgree.checked = both;
   }
 
@@ -401,15 +483,12 @@
       cremationAgree.checked = true;
       miniappAgree.checked = true;
 
-      // ヒント表示も「スクロール不要」に寄せる（文言は好みで調整）
       cremationHint.textContent = "※「すべて同意」を選択中のため、スクロール不要です。";
       miniappHint.textContent = "※「すべて同意」を選択中のため、スクロール不要です。";
     } else {
-      // master解除時：個別は一旦OFFに戻す（要件が変わるならここを調整）
       cremationAgree.checked = false;
       miniappAgree.checked = false;
 
-      // 個別チェックは「スクロール済み」のものだけ有効に戻す
       cremationAgree.disabled = !cremationUnlockedByScroll;
       miniappAgree.disabled = !miniappUnlockedByScroll;
 
@@ -453,7 +532,6 @@
   // individual agrees
   cremationAgree.addEventListener('change', () => {
     if (allAgree.checked && !cremationAgree.checked) {
-      // master ON中に個別OFFが出たら master解除扱い（挙動をシンプルに）
       allAgree.checked = false;
       applyMasterAgree(false);
       return;
@@ -472,12 +550,24 @@
     updateButtonState();
   });
 
+  // ✅ 同行者選択の変更でボタン更新
+  companionRadios.forEach(r => r.addEventListener('change', updateButtonState));
+
+  // submit (mock)
   submitBtn.addEventListener('click', () => {
-    // ここに本来はAPI送信などを入れる
-  
-    // モック：登録完了としてホームへ
-    window.location.href = "./index.html";
+    // モック：登録済みフラグ（index.htmlのガードに合わせる）
+    localStorage.setItem("miniapp_registered", "1");
+
+    // モック：同行者選択を保存（任意）
+    const selected = companionRadios.find(r => r.checked)?.value || "";
+    localStorage.setItem("miniapp_companion", selected); // yes / no
+
+    // ホームへ
+    window.location.replace("./index.html");
   });
+
+  // 初期：未選択のため登録は押せない
+  updateButtonState();
 </script>
 </body>
 </html>
