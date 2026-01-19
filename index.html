@@ -52,7 +52,7 @@
     /* ===== ヘッダー ===== */
     .header{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
       margin-bottom:16px;
@@ -61,12 +61,16 @@
     .app-title{
       font-size: var(--title);
       font-weight:900;
+      line-height:1.2;
+      padding-top:2px;
     }
 
     .right-head{
       display:flex;
       align-items:center;
       gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
     .status{
@@ -80,6 +84,7 @@
       font-size:12px;
       font-weight:800;
       color: var(--muted);
+      white-space:nowrap;
     }
     .dot{
       width:8px;height:8px;border-radius:999px;
@@ -87,23 +92,40 @@
       box-shadow:0 0 0 5px rgba(34,197,94,.12);
     }
 
-    .day-switch{
+    .seg{
       display:flex;
       gap:4px;
-    }
-    .day-switch button{
+      align-items:center;
+      background:#fff;
       border:1px solid var(--line);
+      border-radius:12px;
+      padding:4px;
+    }
+    .seg .lbl{
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
+      padding:0 6px 0 4px;
+      white-space:nowrap;
+    }
+    .seg button{
+      border:1px solid transparent;
       background:#fff;
       padding:6px 10px;
       border-radius:10px;
       font-size:12px;
       font-weight:900;
       cursor:pointer;
+      white-space:nowrap;
     }
-    .day-switch button.active{
+    .seg button.active{
       background: var(--primary);
       color:#fff;
       border-color: var(--primary);
+    }
+    .seg button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
     }
 
     /* ===== カード ===== */
@@ -201,25 +223,6 @@
       font-size:26px;
       color:#9ca3af;
     }
-
-    /* ✅ チェックイン解除 行（リンクの外に出して安定させる） */
-    .subRow{
-      padding: 10px 16px 14px;
-      border-bottom:1px solid var(--line);
-      background:#fff;
-    }
-    .subRowBtn{
-      width:100%;
-      border:1px solid var(--line);
-      background: var(--soft);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 12px 12px;
-      font-size: 14px;
-      font-weight: 900;
-      cursor:pointer;
-    }
-    .subRowBtn:active{ transform: translateY(1px); }
   </style>
 </head>
 
@@ -232,10 +235,20 @@
         <div class="app-title">葬儀ミニアプリ</div>
 
         <div class="right-head">
-          <div class="day-switch">
-            <button id="btnToday">当日</button>
-            <button id="btnNotToday">当日以外</button>
+          <!-- 当日 / 当日以外 -->
+          <div class="seg" aria-label="当日切替">
+            <span class="lbl">日付</span>
+            <button id="btnToday" type="button">当日</button>
+            <button id="btnNotToday" type="button">当日以外</button>
           </div>
+
+          <!-- ✅ 追加：チェックイン / 未チェックイン -->
+          <div class="seg" aria-label="チェックイン切替">
+            <span class="lbl">状態</span>
+            <button id="btnCheckedIn" type="button">チェックイン済</button>
+            <button id="btnNotCheckedIn" type="button">未チェックイン</button>
+          </div>
+
           <div class="status">
             <span class="dot"></span>
             <span>DEV</span>
@@ -251,7 +264,7 @@
 
         <nav class="menu">
 
-          <!-- ✅ マイページ（先頭） -->
+          <!-- マイページ（先頭） -->
           <a class="item" href="./mypage.html">
             <div class="left">
               <div class="icon">👤</div>
@@ -263,7 +276,7 @@
             <div class="chev">›</div>
           </a>
 
-          <!-- ✅ チェックイン（当日のみ活性） -->
+          <!-- チェックイン（当日のみ活性） -->
           <a class="item" id="checkinItem" href="./checkin.html">
             <div class="left">
               <div class="icon">✅</div>
@@ -278,11 +291,6 @@
             </div>
             <div class="chev">›</div>
           </a>
-
-          <!-- ✅ チェックイン解除（ホーム側） -->
-          <div class="subRow" id="homeUncheckRow" style="display:none;">
-            <button class="subRowBtn" id="homeUncheckBtn" type="button">チェックインを解除（モック）</button>
-          </div>
 
           <!-- オーダー（当日かつチェックイン後に活性） -->
           <a class="item" id="orderItem" href="./order.html">
@@ -317,36 +325,45 @@
   </div>
 
   <script>
-    // 未登録なら必ず会員登録へ
+    // 未登録なら必ず会員登録へ（既存踏襲）
     if(localStorage.getItem("miniapp_registered") !== "1"){
       location.replace("./register.html");
     }
 
     const DAY_KEY = "miniapp_day_mode";
 
-    // ✅ checkin.htmlの保存キー揺れに対応（互換）
+    // ✅ checkin.html の保存キーが揺れても拾う（互換）
     const CHECKIN_KEYS = [
       "miniapp_checkin_done",        // 旧
       "miniapp_checkin_done_v2",     // v2
       "miniapp_checkin_done_soft",   // ソフトおすすめ版
-      "miniapp_checkin_done_force"   // 強制版（残骸でも拾う）
+      "miniapp_checkin_done_force"   // 強制版
     ];
+
+    // ✅ ホームで切り替えるときは、基本キーに保存して統一していく
+    const CANON_CHECKIN_KEY = "miniapp_checkin_done";
 
     const btnToday = document.getElementById("btnToday");
     const btnNotToday = document.getElementById("btnNotToday");
+
+    const btnCheckedIn = document.getElementById("btnCheckedIn");
+    const btnNotCheckedIn = document.getElementById("btnNotCheckedIn");
 
     const checkinItem = document.getElementById("checkinItem");
     const checkinNote = document.getElementById("checkinNote");
     const checkinTag  = document.getElementById("checkinTag");
     const checkinSub  = document.getElementById("checkinSub");
 
-    const homeUncheckRow = document.getElementById("homeUncheckRow");
-    const homeUncheckBtn = document.getElementById("homeUncheckBtn");
-
     const orderItem = document.getElementById("orderItem");
     const orderNote = document.getElementById("orderNote");
     const mapItem   = document.getElementById("mapItem");
     const mapNote   = document.getElementById("mapNote");
+
+    function pad(n){ return String(n).padStart(2,"0"); }
+    function nowText(){
+      const now = new Date();
+      return `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
 
     function hasAnyCheckin(){
       for(const k of CHECKIN_KEYS){
@@ -360,14 +377,28 @@
       CHECKIN_KEYS.forEach(k => localStorage.removeItem(k));
     }
 
+    function setCheckinMock(){
+      // 互換キーを一旦整理してから、統一キーで保存
+      clearAllCheckin();
+      localStorage.setItem(CANON_CHECKIN_KEY, JSON.stringify({
+        checkedAt: nowText(),
+        source: "home"
+      }));
+    }
+
     function render(mode){
       const today = mode === "today";
       const checkedIn = hasAnyCheckin();
 
+      // 日付切替の見た目
       btnToday.classList.toggle("active", today);
       btnNotToday.classList.toggle("active", !today);
 
-      // ✅ 当日だけチェックイン活性
+      // チェックイン切替の見た目
+      btnCheckedIn.classList.toggle("active", checkedIn);
+      btnNotCheckedIn.classList.toggle("active", !checkedIn);
+
+      // ✅ 当日以外はチェックインメニュー非活性
       if(today){
         checkinItem.classList.remove("disabled");
         checkinNote.style.display = "none";
@@ -376,14 +407,12 @@
         checkinNote.style.display = "";
       }
 
-      // ✅ チェックイン済み表示 & 解除行
+      // チェックイン済みタグ
       if(checkedIn){
         checkinTag.style.display = "";
-        homeUncheckRow.style.display = "";
         checkinSub.textContent = "チェックイン済み（確認）";
       }else{
         checkinTag.style.display = "none";
-        homeUncheckRow.style.display = "none";
         checkinSub.textContent = "当日の受付";
       }
 
@@ -405,6 +434,7 @@
     const saved = localStorage.getItem(DAY_KEY) || "not_today";
     render(saved);
 
+    // 日付切替
     btnToday.onclick = () => {
       localStorage.setItem(DAY_KEY,"today");
       render("today");
@@ -414,14 +444,20 @@
       render("not_today");
     };
 
-    // ✅ ホームでチェックイン解除（モック）
-    homeUncheckBtn.addEventListener("click", ()=>{
+    // ✅ 状態切替（チェックイン / 未チェックイン）
+    btnCheckedIn.onclick = () => {
+      setCheckinMock();
+      render(localStorage.getItem(DAY_KEY) || "not_today");
+      alert("チェックイン済みにしました（モック）。");
+    };
+
+    btnNotCheckedIn.onclick = () => {
       clearAllCheckin();
       render(localStorage.getItem(DAY_KEY) || "not_today");
-      alert("チェックインを解除しました（モック）。");
-    });
+      alert("未チェックインに戻しました（モック）。");
+    };
 
-    // ✅ checkin.htmlから戻ってきた時に反映（LINE WebView対策）
+    // checkin.html から戻ってきた時に反映（LINE WebView対策）
     window.addEventListener("pageshow", () => {
       render(localStorage.getItem(DAY_KEY) || "not_today");
     });
