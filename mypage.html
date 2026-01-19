@@ -239,6 +239,12 @@
           <div class="k">住所</div>
           <div class="v" id="addr">東京都◯◯区◯◯ 1-2-3</div>
         </div>
+
+        <!-- 追加：メールアドレス（住所の下） -->
+        <div class="row">
+          <div class="k">メールアドレス</div>
+          <div class="v" id="email">taro@example.com</div>
+        </div>
       </div>
 
       <div class="note">
@@ -308,13 +314,16 @@
       if(!uRaw) return;
       try{
         const u = JSON.parse(uRaw);
-        if(u.name) document.getElementById("name").textContent = u.name;
-        if(u.tel)  document.getElementById("tel").textContent  = u.tel;
-        if(u.addr) document.getElementById("addr").textContent = u.addr;
+        if(u.name)  document.getElementById("name").textContent  = u.name;
+        if(u.tel)   document.getElementById("tel").textContent   = u.tel;
+        if(u.addr)  document.getElementById("addr").textContent  = u.addr;
+
+        // 追加：email
+        if(u.email) document.getElementById("email").textContent = u.email;
+
         document.getElementById("modePill").textContent = "保存値";
       }catch{}
     })();
   </script>
 </body>
 </html>
-
