@@ -472,9 +472,11 @@
     updateButtonState();
   });
 
-  // submit (mock)
   submitBtn.addEventListener('click', () => {
-    alert('登録処理（API呼び出し等）はここに実装してください。');
+    // ここに本来はAPI送信などを入れる
+  
+    // モック：登録完了としてホームへ
+    window.location.href = "./index.html";
   });
 </script>
 </body>
