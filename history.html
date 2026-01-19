@@ -64,7 +64,7 @@
       gap:8px;
     }
 
-    /* ★文字付き戻る（わかりやすく） */
+    /* 戻る（文字付きで分かりやすく） */
     .backBtn{
       height:44px;
       padding:0 12px;
@@ -137,31 +137,21 @@
       gap:12px;
     }
 
-    .who{
-      display:flex;
+    /* ★喪主のみ：履歴合計 */
+    .sumBox{
+      display:none;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      box-shadow: var(--shadow);
+      padding:12px 14px;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
       font-weight:900;
     }
-    .who .label{
-      font-size:12px;
-      color: var(--muted);
-      font-weight:900;
-      white-space:nowrap;
-    }
-    .who .name{
-      font-size:16px;
-      color: var(--text);
-      font-weight:900;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
+    .sumBox .label{ font-size:12px; color: var(--muted); font-weight:900; }
+    .sumBox .value{ font-size:22px; font-weight:900; }
 
     .card{
       border:1px solid var(--line);
@@ -222,7 +212,7 @@
       line-height:1.5;
     }
 
-    /* ★申込者/操作者 を強調 */
+    /* ★誰が注文操作したか */
     .whoLine{
       display:flex;
       gap:10px;
@@ -284,10 +274,13 @@
   </header>
 
   <div class="wrap">
-    <!-- 申込者＝喪主の名前（固定表示） -->
-    <section class="who" aria-label="申込者（喪主）">
-      <div class="label">申込者（喪主）</div>
-      <div class="name" id="applicantName">—</div>
+    <!-- ★喪主のみ表示：履歴合計金額 -->
+    <section class="sumBox" id="historySumBox" aria-label="履歴合計金額">
+      <div>
+        <div class="label">履歴の合計金額</div>
+        <div class="value" id="historySum">¥0</div>
+      </div>
+      <div class="pill">喪主のみ</div>
     </section>
 
     <section class="card">
@@ -303,20 +296,21 @@
     const LS_CART = "miniapp_cart";
     const LS_ROLE = "miniapp_role";
     const LS_HISTORY = "miniapp_order_history";
-    const LS_APPLICANT_NAME = "miniapp_applicant_name";
 
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
-    if(!localStorage.getItem(LS_APPLICANT_NAME)) localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
 
     const backBtn = document.getElementById("backBtn");
     const cartBtn = document.getElementById("cartBtn");
     const cartBadge = document.getElementById("cartBadge");
+
     const btnHost = document.getElementById("btnHost");
     const btnCompanion = document.getElementById("btnCompanion");
 
-    const applicantNameEl = document.getElementById("applicantName");
     const countPill = document.getElementById("countPill");
     const historyList = document.getElementById("historyList");
+
+    const historySumBox = document.getElementById("historySumBox");
+    const historySumEl = document.getElementById("historySum");
 
     backBtn.addEventListener("click", ()=> location.href = "./order.html");
     cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
@@ -351,20 +345,18 @@
     btnCompanion.addEventListener("click", ()=>setRole("companion"));
 
     function roleLabel(v){
-      if(v === "喪主" || v === "同行者") return v; // cart.htmlがこの値で入れてる
+      if(v === "喪主" || v === "同行者") return v;
       if(v === "host") return "喪主";
       if(v === "companion") return "同行者";
       return "—";
     }
 
     function render(){
+      // role
       const role = getRole();
-      const host = role === "host";
-      btnHost.classList.toggle("active", host);
-      btnCompanion.classList.toggle("active", !host);
-
-      const applicant = localStorage.getItem(LS_APPLICANT_NAME) || "—";
-      applicantNameEl.textContent = applicant;
+      const isHost = role === "host";
+      btnHost.classList.toggle("active", isHost);
+      btnCompanion.classList.toggle("active", !isHost);
 
       // cart badge
       const cart = loadCart();
@@ -380,10 +372,18 @@
       const history = loadHistory();
       countPill.textContent = `${history.length}件`;
 
+      // ★喪主のみ：履歴合計金額
+      if(isHost){
+        const sum = history.reduce((acc, h)=> acc + Number(h.total || 0), 0);
+        historySumEl.textContent = yen(sum);
+        historySumBox.style.display = "flex";
+      }else{
+        historySumBox.style.display = "none";
+      }
+
       historyList.innerHTML = history.length
         ? history.map(h => {
-            const applicantName = h.orderedBy || applicant;      // 申込者（喪主名）
-            const operator = roleLabel(h.operatorRole);          // 操作した人（喪主/同行者）
+            const operator = roleLabel(h.operatorRole); // 喪主/同行者
             const items = (h.items || []).join(" / ");
             return `
               <div class="row">
@@ -393,8 +393,7 @@
                 </div>
 
                 <div class="whoLine">
-                  <span class="tag"><span class="k">申込者</span><span class="v">${escapeHtml(applicantName)}</span></span>
-                  <span class="tag"><span class="k">操作</span><span class="v">${escapeHtml(operator)}</span></span>
+                  <span class="tag"><span class="k">注文</span><span class="v">${escapeHtml(operator)}</span></span>
                 </div>
 
                 <div class="items">${escapeHtml(items)}</div>
