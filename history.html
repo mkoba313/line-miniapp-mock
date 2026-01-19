@@ -11,7 +11,6 @@
       --text:#111827;
       --muted:#6b7280;
       --line:#e5e7eb;
-      --soft:#f9fafb;
 
       --radius:16px;
       --shadow: 0 10px 28px rgba(17,24,39,.08);
@@ -120,39 +119,6 @@
       border-color: var(--primary);
     }
 
-    .toggleGroup{ display:flex; align-items:center; gap:8px; }
-    .toggle{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff;
-      font-size:12px;
-      font-weight:900;
-      color:#374151;
-      white-space:nowrap;
-    }
-    .toggle input{ width:18px;height:18px; }
-
-    .stopBanner{
-      position:sticky;
-      top:64px;
-      z-index:55;
-      border-bottom:1px solid #fecaca;
-      background:#fff1f2;
-      color:#991b1b;
-      font-weight:900;
-      padding:10px 12px;
-      display:none;
-    }
-    .stopBanner .inner{
-      max-width: var(--max);
-      margin:0 auto;
-      text-align:center;
-    }
-
     .wrap{
       max-width: var(--max);
       margin:0 auto;
@@ -219,6 +185,34 @@
       font-weight:800;
       line-height:1.5;
     }
+
+    /* ★注文者（申込者）を分かりやすく */
+    .who{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+      font-weight:900;
+    }
+    .who .label{
+      font-size:12px;
+      color: var(--muted);
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .who .name{
+      font-size:16px;
+      color: var(--text);
+      font-weight:900;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
     .empty{
       padding:14px 16px;
       color: var(--muted);
@@ -230,7 +224,7 @@
 <body>
   <header class="header">
     <div class="header-left">
-      <button class="iconBtn" id="backBtn" type="button" aria-label="戻る">
+      <button class="iconBtn" id="backBtn" type="button" aria-label="オーダーに戻る">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M15 6 9 12l6 6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -250,27 +244,22 @@
         </svg>
       </button>
 
-      <div class="toggleGroup">
-        <div class="role-switch" aria-label="表示切替">
-          <button id="btnHost" type="button">喪主</button>
-          <button id="btnCompanion" type="button">同行者</button>
-        </div>
-
-        <label class="toggle" title="オーダー停止">
-          <span>停止</span>
-          <input id="stopToggle" type="checkbox" />
-        </label>
+      <div class="role-switch" aria-label="表示切替">
+        <button id="btnHost" type="button">喪主</button>
+        <button id="btnCompanion" type="button">同行者</button>
       </div>
 
       <a class="header-home" href="./index.html">ホーム</a>
     </div>
   </header>
 
-  <div class="stopBanner" id="stopBanner">
-    <div class="inner">オーダー停止中です（履歴は閲覧できます）</div>
-  </div>
-
   <div class="wrap">
+    <!-- ★申込者（注文者）表示 -->
+    <section class="who" aria-label="申込者">
+      <div class="label">申込者</div>
+      <div class="name" id="applicantName">—</div>
+    </section>
+
     <section class="card">
       <div class="card-hd">
         <div class="h">履歴一覧</div>
@@ -282,11 +271,15 @@
 
   <script>
     const LS_CART = "miniapp_cart";
-    const LS_ROLE = "miniapp_role";             // "host" | "companion"
-    const LS_ORDER_STOP = "miniapp_order_stop"; // "1" stop | "0" run
+    const LS_ROLE = "miniapp_role"; // "host" | "companion"
+
+    // ★モックの申込者名（必要なら別画面で保存するキーに置換）
+    const LS_APPLICANT_NAME = "miniapp_applicant_name";
+    if(!localStorage.getItem(LS_APPLICANT_NAME)){
+      localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
+    }
 
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
-    if(localStorage.getItem(LS_ORDER_STOP) == null) localStorage.setItem(LS_ORDER_STOP, "1");
 
     const backBtn = document.getElementById("backBtn");
     const cartBtn = document.getElementById("cartBtn");
@@ -294,9 +287,8 @@
 
     const btnHost = document.getElementById("btnHost");
     const btnCompanion = document.getElementById("btnCompanion");
-    const stopToggle = document.getElementById("stopToggle");
-    const stopBanner = document.getElementById("stopBanner");
 
+    const applicantNameEl = document.getElementById("applicantName");
     const countPill = document.getElementById("countPill");
     const historyList = document.getElementById("historyList");
 
@@ -330,17 +322,13 @@
     function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
     function setRole(role){ localStorage.setItem(LS_ROLE, role); render(); }
 
-    function isStopped(){ return (localStorage.getItem(LS_ORDER_STOP) || "1") === "1"; }
-    function setStopped(v){ localStorage.setItem(LS_ORDER_STOP, v ? "1" : "0"); render(); }
-
     btnHost.addEventListener("click", ()=>setRole("host"));
     btnCompanion.addEventListener("click", ()=>setRole("companion"));
-    stopToggle.addEventListener("change", ()=>setStopped(stopToggle.checked));
 
-    // デモ履歴（APIに置換予定）
+    // デモ履歴（APIに置換予定） + ★注文者名を入れる（将来はAPIの項目）
     const DEMO_HISTORY = [
-      { id:"H-20260119-001", date:"2026/01/19 10:12", total:1240, items:["瓶ビール × 1","お茶 × 2","おしぼり × 2"] },
-      { id:"H-20260118-004", date:"2026/01/18 16:40", total:540,  items:["水 × 1","のど飴 × 1","おしぼり × 1"] },
+      { id:"H-20260119-001", date:"2026/01/19 10:12", total:1240, items:["瓶ビール × 1","お茶 × 2","おしぼり × 2"], orderedBy:"山田 太郎" },
+      { id:"H-20260118-004", date:"2026/01/18 16:40", total:540,  items:["水 × 1","のど飴 × 1","おしぼり × 1"], orderedBy:"山田 太郎" },
     ];
 
     function render(){
@@ -350,9 +338,9 @@
       btnHost.classList.toggle("active", host);
       btnCompanion.classList.toggle("active", !host);
 
-      // stop
-      stopToggle.checked = isStopped();
-      stopBanner.style.display = isStopped() ? "" : "none";
+      // applicant
+      const applicant = localStorage.getItem(LS_APPLICANT_NAME) || "—";
+      applicantNameEl.textContent = applicant;
 
       // cart badge
       const cart = loadCart();
@@ -373,12 +361,17 @@
               <div class="date">${escapeHtml(h.date)}</div>
               <div class="total">${yen(h.total)}</div>
             </div>
+            <div class="items">注文者：${escapeHtml(h.orderedBy || applicant)}</div>
             <div class="items">${escapeHtml(h.items.join(" / "))}</div>
             <div class="items">注文ID：${escapeHtml(h.id)}</div>
           </div>
         `).join("")
         : `<div class="empty">購入履歴はありません。</div>`;
     }
+
+    // 戻ってきた時にも最新反映
+    window.addEventListener("pageshow", () => render());
+    document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
 
     render();
   </script>
