@@ -404,303 +404,322 @@
     </section>
   </div>
 
-  <script>
-    // ===== 商品マスタ =====
-    const PRODUCTS = [
-      { id:"p_beer", name:"瓶ビール", price:600 },
-      { id:"p_tea",  name:"お茶（ペットボトル）", price:160 },
-      { id:"p_wet",  name:"おしぼり", price:80 },
-      { id:"s_water", name:"水（ペットボトル）", price:120 },
-      { id:"s_candy", name:"のど飴", price:150 },
-      { id:"s_towel", name:"ハンカチ", price:300 },
-      { id:"s_coffee", name:"コーヒー（缶）", price:140 },
-      { id:"s_choco", name:"チョコレート", price:220 },
-    ];
+<script>
+  // ===== 商品マスタ =====
+  const PRODUCTS = [
+    { id:"p_beer", name:"瓶ビール", price:600 },
+    { id:"p_tea",  name:"お茶（ペットボトル）", price:160 },
+    { id:"p_wet",  name:"おしぼり", price:80 },
+    { id:"s_water", name:"水（ペットボトル）", price:120 },
+    { id:"s_candy", name:"のど飴", price:150 },
+    { id:"s_towel", name:"ハンカチ", price:300 },
+    { id:"s_coffee", name:"コーヒー（缶）", price:140 },
+    { id:"s_choco", name:"チョコレート", price:220 },
+  ];
 
-    const LS_CART = "miniapp_cart";
-    const LS_ROLE = "miniapp_role";
-    const LS_HISTORY = "miniapp_order_history";
-    const LS_APPLICANT_NAME = "miniapp_applicant_name";
+  const LS_CART = "miniapp_cart";
+  const LS_ROLE = "miniapp_role";
+  const LS_HISTORY = "miniapp_order_history";
+  const LS_APPLICANT_NAME = "miniapp_applicant_name";
 
-    if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
-    if(!localStorage.getItem(LS_APPLICANT_NAME)) localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
+  if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
+  if(!localStorage.getItem(LS_APPLICANT_NAME)) localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
 
-    const backBtn = document.getElementById("backBtn");
-    const cartBtn = document.getElementById("cartBtn");
-    const cartBadge = document.getElementById("cartBadge");
+  const backBtn = document.getElementById("backBtn");
+  const cartBtn = document.getElementById("cartBtn");
+  const cartBadge = document.getElementById("cartBadge");
 
-    const btnHost = document.getElementById("btnHost");
-    const btnCompanion = document.getElementById("btnCompanion");
+  const btnHost = document.getElementById("btnHost");
+  const btnCompanion = document.getElementById("btnCompanion");
 
-    const cartList = document.getElementById("cartList");
-    const countPill = document.getElementById("countPill");
-    const totalEl = document.getElementById("total");
+  const cartList = document.getElementById("cartList");
+  const countPill = document.getElementById("countPill");
+  const totalEl = document.getElementById("total");
 
-    const orderBtn = document.getElementById("orderBtn");
-    const clearAllBtn = document.getElementById("clearAllBtn");
-    const historyBtn = document.getElementById("historyBtn");
+  const orderBtn = document.getElementById("orderBtn");
+  const clearAllBtn = document.getElementById("clearAllBtn");
+  const historyBtn = document.getElementById("historyBtn");
 
-    const successBanner = document.getElementById("successBanner");
-　　const doneMsg = document.getElementById("doneMsg");
-    
-    // ===== Utils =====
-    function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+  const successBanner = document.getElementById("successBanner");
+  const doneMsg = document.getElementById("doneMsg");
+
+  // 「注文が完了しました」を表示すべきか（画面内状態）
+  let orderJustCompleted = false;
+
+  // ===== Utils =====
+  function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function loadCart(){
+    try{
+      const raw = localStorage.getItem(LS_CART);
+      if(!raw) return {};
+      const obj = JSON.parse(raw);
+      return (obj && typeof obj === "object") ? obj : {};
+    }catch{
+      return {};
     }
+  }
+  function saveCart(cart){
+    localStorage.setItem(LS_CART, JSON.stringify(cart));
+  }
 
-    function loadCart(){
-      try{
-        const raw = localStorage.getItem(LS_CART);
-        if(!raw) return {};
-        const obj = JSON.parse(raw);
-        return (obj && typeof obj === "object") ? obj : {};
-      }catch{
-        return {};
-      }
-    }
-    function saveCart(cart){
-      localStorage.setItem(LS_CART, JSON.stringify(cart));
-    }
+  // マスタに無いIDは削除（バッジが消えない問題対策）
+  function normalizeCart(cart){
+    const out = {};
+    let changed = false;
 
-    // マスタに無いIDは削除
-    function normalizeCart(cart){
-      const out = {};
-      let changed = false;
+    for (const [id, qtyRaw] of Object.entries(cart || {})) {
+      const q = Number(qtyRaw || 0);
+      const exists = PRODUCTS.some(p => p.id === id);
+      if (!exists || !Number.isFinite(q) || q <= 0) { changed = true; continue; }
+      out[id] = q;
+    }
+    if (JSON.stringify(out) !== JSON.stringify(cart)) changed = true;
+    return { cart: out, changed };
+  }
 
-      for (const [id, qtyRaw] of Object.entries(cart || {})) {
-        const q = Number(qtyRaw || 0);
-        const exists = PRODUCTS.some(p => p.id === id);
-        if (!exists || !Number.isFinite(q) || q <= 0) { changed = true; continue; }
-        out[id] = q;
-      }
-      if (JSON.stringify(out) !== JSON.stringify(cart)) changed = true;
-      return { cart: out, changed };
+  function loadHistory(){
+    try{
+      const raw = localStorage.getItem(LS_HISTORY);
+      if(!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    }catch{
+      return [];
     }
+  }
+  function saveHistory(arr){
+    localStorage.setItem(LS_HISTORY, JSON.stringify(arr));
+  }
 
-    function loadHistory(){
-      try{
-        const raw = localStorage.getItem(LS_HISTORY);
-        if(!raw) return [];
-        const arr = JSON.parse(raw);
-        return Array.isArray(arr) ? arr : [];
-      }catch{
-        return [];
-      }
+  function cartCount(cart){
+    return Object.values(cart).reduce((a,b)=>a+Number(b||0),0);
+  }
+  function cartTotal(cart){
+    let sum=0;
+    for(const [id, qty] of Object.entries(cart)){
+      const p = PRODUCTS.find(x=>x.id===id);
+      if(p) sum += p.price * Number(qty||0);
     }
-    function saveHistory(arr){
-      localStorage.setItem(LS_HISTORY, JSON.stringify(arr));
-    }
+    return sum;
+  }
 
-    function cartCount(cart){
-      return Object.values(cart).reduce((a,b)=>a+Number(b||0),0);
-    }
-    function cartTotal(cart){
-      let sum=0;
-      for(const [id, qty] of Object.entries(cart)){
+  function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
+  function setRole(role){ localStorage.setItem(LS_ROLE, role); hideSuccess(); render(); }
+
+  function formatDate(d){
+    const pad = (n)=> String(n).padStart(2,"0");
+    return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function makeOrderId(){
+    const d = new Date();
+    const pad = (n)=> String(n).padStart(2,"0");
+    const ymd = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+    return `H-${ymd}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+  }
+
+  // ★追加：hideSuccess が無いせいで落ちてたので定義
+  function hideSuccess(){
+    successBanner.style.display = "none";
+    doneMsg.style.display = "none";
+    orderJustCompleted = false;
+  }
+
+  function showSuccess(){
+    successBanner.style.display = "";
+    doneMsg.style.display = "";
+    // 自動で消したければこのまま。消さないなら下2行を削除してOK
+    setTimeout(()=>{ successBanner.style.display = "none"; }, 5000);
+  }
+
+  // ===== Navigation =====
+  backBtn.addEventListener("click", ()=> location.href = "./order.html");
+  cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
+  historyBtn.addEventListener("click", ()=> location.href = "./history.html");
+
+  btnHost.addEventListener("click", ()=>setRole("host"));
+  btnCompanion.addEventListener("click", ()=>setRole("companion"));
+
+  // ===== 全削除 =====
+  clearAllBtn.addEventListener("click", ()=>{
+    saveCart({});
+    hideSuccess();
+    render();
+  });
+
+  // ===== 注文する（画面遷移しない） =====
+  orderBtn.addEventListener("click", ()=>{
+    const loaded = loadCart();
+    const normalized = normalizeCart(loaded);
+    const cart = normalized.cart;
+    if(normalized.changed) saveCart(cart);
+
+    const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
+    if(entries.length === 0) return;
+
+    const applicant = localStorage.getItem(LS_APPLICANT_NAME) || "—";
+    const role = getRole();
+    const roleLabel = role === "host" ? "喪主" : "同行者";
+
+    const items = entries
+      .map(([id, qty])=>{
         const p = PRODUCTS.find(x=>x.id===id);
-        if(p) sum += p.price * Number(qty||0);
-      }
-      return sum;
-    }
+        if(!p) return null;
+        return `${p.name} × ${Number(qty||0)}`;
+      })
+      .filter(Boolean);
 
-    function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
-    function setRole(role){ localStorage.setItem(LS_ROLE, role); render(); }
+    const total = cartTotal(cart);
 
-    function formatDate(d){
-      const pad = (n)=> String(n).padStart(2,"0");
-      return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    }
-    function makeOrderId(){
-      const d = new Date();
-      const pad = (n)=> String(n).padStart(2,"0");
-      const ymd = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
-      return `H-${ymd}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
-    }
+    // 履歴に追加
+    const history = loadHistory();
+    history.unshift({
+      id: makeOrderId(),
+      date: formatDate(new Date()),
+      total,
+      items,
+      operatorRole: roleLabel // ★これで「喪主/同行者」が履歴で分かる
+    });
+    saveHistory(history);
 
-    function showSuccess(){
-      successBanner.style.display = "";
-      // 5秒後に自動で消す（不要なら消してOK）
-      setTimeout(()=>{ successBanner.style.display = "none"; }, 5000);
-    }
+    // カートを空に
+    saveCart({});
 
-    // ===== Navigation =====
-    backBtn.addEventListener("click", ()=> location.href = "./order.html");
-    cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
-    historyBtn.addEventListener("click", ()=> location.href = "./history.html");
+    // 完了表示（この画面のまま）
+    orderJustCompleted = true;
+    render();
+    showSuccess();
+    doneMsg.scrollIntoView({ behavior:"smooth", block:"start" });
+  });
 
-    btnHost.addEventListener("click", ()=>setRole("host"));
-    btnCompanion.addEventListener("click", ()=>setRole("companion"));
+  // ===== イベント委譲（数量＋/−/削除） =====
+  document.addEventListener("click", (e)=>{
+    const t = e.target;
+    if(!(t instanceof Element)) return;
 
-    // ===== 全削除 =====
-    clearAllBtn.addEventListener("click", ()=>{
-      saveCart({});
+    const act = t.getAttribute("data-act");
+    const del = t.getAttribute("data-del");
+
+    if(act){
+      const id = t.getAttribute("data-id");
+      if(!id) return;
+
+      const loaded = loadCart();
+      const normalized = normalizeCart(loaded);
+      const cart = normalized.cart;
+
+      const cur = Number(cart[id] || 0);
+      const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
+      if(next <= 0) delete cart[id];
+      else cart[id] = next;
+
+      saveCart(cart);
       hideSuccess();
       render();
-    });
+      return;
+    }
 
-    // ===== 注文する（画面遷移しない） =====
-    orderBtn.addEventListener("click", ()=>{
+    if(del){
       const loaded = loadCart();
       const normalized = normalizeCart(loaded);
       const cart = normalized.cart;
-      if(normalized.changed) saveCart(cart);
 
-      const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
-      if(entries.length === 0) return;
-
-      const applicant = localStorage.getItem(LS_APPLICANT_NAME) || "—";
-      const role = getRole();
-      const roleLabel = role === "host" ? "喪主" : "同行者";
-
-      const items = entries
-        .map(([id, qty])=>{
-          const p = PRODUCTS.find(x=>x.id===id);
-          if(!p) return null;
-          return `${p.name} × ${Number(qty||0)}`;
-        })
-        .filter(Boolean);
-
-      const total = cartTotal(cart);
-
-      // ★履歴に追加
-      const history = loadHistory();
-      history.unshift({
-        id: makeOrderId(),
-        date: formatDate(new Date()),
-        total,
-        items,
-        orderedBy: applicant,   // 注文者（申込者）
-        operatorRole: roleLabel // 操作したのが喪主/同行者
-      });
-      saveHistory(history);
-
-      // ★カートを空に
-      saveCart({});
-
-      // ★完了メッセージ表示＆画面更新（この画面のまま）
+      delete cart[del];
+      saveCart(cart);
+      hideSuccess();
       render();
-      showSuccess();
-      // 完了メッセージが見える位置へスクロール（確実に見せる）
-      doneMsg.scrollIntoView({ behavior:"smooth", block:"start" });
+      return;
+    }
+  });
 
-    });
+  // ===== Render =====
+  function renderHeader(cart){
+    const role = getRole();
+    const host = role === "host";
+    btnHost.classList.toggle("active", host);
+    btnCompanion.classList.toggle("active", !host);
 
-    // ===== イベント委譲（数量＋/−/削除） =====
-    document.addEventListener("click", (e)=>{
-      const t = e.target;
-      if(!(t instanceof Element)) return;
+    const c = cartCount(cart);
+    if(c > 0){
+      cartBadge.style.display = "inline-flex";
+      cartBadge.textContent = String(c);
+    }else{
+      cartBadge.style.display = "none";
+    }
+  }
 
-      const act = t.getAttribute("data-act");
-      const del = t.getAttribute("data-del");
+  function render(){
+    const loaded = loadCart();
+    const normalized = normalizeCart(loaded);
+    const cart = normalized.cart;
+    if(normalized.changed) saveCart(cart);
 
-      if(act){
-        const id = t.getAttribute("data-id");
-        if(!id) return;
+    renderHeader(cart);
 
-        const loaded = loadCart();
-        const normalized = normalizeCart(loaded);
-        const cart = normalized.cart;
+    const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
 
-        const cur = Number(cart[id] || 0);
-        const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
-        if(next <= 0) delete cart[id];
-        else cart[id] = next;
+    const count = cartCount(cart);
+    countPill.textContent = `${count}点`;
+    totalEl.textContent = yen(cartTotal(cart));
 
-        saveCart(cart);
-        successBanner.style.display = "none";
-        render();
-        return;
-      }
+    const has = entries.length > 0;
+    orderBtn.disabled = !has;
+    clearAllBtn.disabled = !has;
 
-      if(del){
-        const loaded = loadCart();
-        const normalized = normalizeCart(loaded);
-        const cart = normalized.cart;
+    if(!has){
+      cartList.innerHTML = `<div class="empty">カートは、空になります</div>`;
 
-        delete cart[del];
-        saveCart(cart);
-        successBanner.style.display = "none";
-        render();
-        return;
-      }
-    });
-
-    // ===== Render =====
-    function renderHeader(cart){
-      const role = getRole();
-      const host = role === "host";
-      btnHost.classList.toggle("active", host);
-      btnCompanion.classList.toggle("active", !host);
-
-      const c = cartCount(cart);
-      if(c > 0){
-        cartBadge.style.display = "inline-flex";
-        cartBadge.textContent = String(c);
+      // ★注文直後だけ完了メッセージを残す
+      if(orderJustCompleted){
+        doneMsg.style.display = "";
       }else{
-        cartBadge.style.display = "none";
+        doneMsg.style.display = "none";
       }
+      return;
     }
 
-    function render(){
-      const loaded = loadCart();
-      const normalized = normalizeCart(loaded);
-      const cart = normalized.cart;
-      if(normalized.changed) saveCart(cart);
+    // カートがある時は完了メッセージは隠す
+    doneMsg.style.display = "none";
 
-      renderHeader(cart);
+    cartList.innerHTML = entries.map(([id, qty])=>{
+      const p = PRODUCTS.find(x=>x.id===id);
+      if(!p) return "";
+      const q = Number(qty||0);
+      const sub = p.price * q;
 
-      const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
-
-      const count = cartCount(cart);
-      countPill.textContent = `${count}点`;
-      totalEl.textContent = yen(cartTotal(cart));
-
-      const has = entries.length > 0;
-      orderBtn.disabled = !has;
-      clearAllBtn.disabled = !has;
-
-      if(!has){
-        cartList.innerHTML = `<div class="empty">カートは、空になります</div>`;
-        return;
-      }
-
-      cartList.innerHTML = entries.map(([id, qty])=>{
-        const p = PRODUCTS.find(x=>x.id===id);
-        if(!p) return "";
-        const q = Number(qty||0);
-        const sub = p.price * q;
-
-        return `
-          <div class="row">
-            <div class="info">
-              <div class="name">${escapeHtml(p.name)}</div>
-              <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
-            </div>
-
-            <div class="right">
-              <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
-                <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
-                <div class="n">${q}</div>
-                <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
-              </div>
-
-              <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
-            </div>
+      return `
+        <div class="row">
+          <div class="info">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
           </div>
-        `;
-      }).join("");
-    }
 
-    window.addEventListener("pageshow", () => render());
-    document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
+          <div class="right">
+            <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
+              <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
+              <div class="n">${q}</div>
+              <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
+            </div>
 
-    render();
-  </script>
+            <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  window.addEventListener("pageshow", () => render());
+  document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
+
+  render();
+</script>
 </body>
 </html>
