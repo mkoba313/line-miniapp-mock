@@ -197,6 +197,21 @@
       box-shadow:0 0 0 5px rgba(22,163,74,.12);
     }
 
+    /* ✅ ホーム側の「解除」リンク（モック） */
+    .resetLink{
+      display:none;
+      margin-top:6px;
+      background:transparent;
+      border:0;
+      padding:0;
+      color:#9ca3af;
+      font-size:12px;
+      font-weight:900;
+      text-decoration:underline;
+      cursor:pointer;
+      width:max-content;
+    }
+
     .chev{
       font-size:26px;
       color:#9ca3af;
@@ -232,7 +247,7 @@
 
         <nav class="menu">
 
-          <!-- ✅ マイページ（先頭） -->
+          <!-- マイページ（先頭） -->
           <a class="item" href="./mypage.html">
             <div class="left">
               <div class="icon">👤</div>
@@ -244,7 +259,7 @@
             <div class="chev">›</div>
           </a>
 
-          <!-- ✅ チェックイン（当日のみ活性） -->
+          <!-- チェックイン（当日のみ活性） -->
           <a class="item" id="checkinItem" href="./checkin.html">
             <div class="left">
               <div class="icon">✅</div>
@@ -252,9 +267,13 @@
                 <div class="label">チェックイン</div>
                 <div class="sub" id="checkinSub">当日の受付</div>
                 <div class="note" id="checkinNote">※当日以外は非活性になります</div>
+
                 <div class="tag" id="checkinTag" style="display:none;">
                   <span class="miniDot"></span>チェックイン済み
                 </div>
+
+                <!-- ✅ 追加：ホームで解除 -->
+                <button class="resetLink" id="homeUncheckBtn" type="button">チェックインを解除（モック）</button>
               </div>
             </div>
             <div class="chev">›</div>
@@ -300,10 +319,10 @@
 
     const DAY_KEY = "miniapp_day_mode";
 
-    // ✅ 互換：checkin.htmlのキーが複数ある前提で拾う
+    // ✅ checkin.htmlの保存キーが揺れても拾う（互換）
     const CHECKIN_KEYS = [
       "miniapp_checkin_done",        // 旧
-      "miniapp_checkin_done_v2",     // 以前提案のv2
+      "miniapp_checkin_done_v2",     // v2
       "miniapp_checkin_done_soft",   // ソフトおすすめ版
       "miniapp_checkin_done_force"   // 強制版（過去の残骸でも拾う）
     ];
@@ -315,30 +334,30 @@
     const checkinNote = document.getElementById("checkinNote");
     const checkinTag  = document.getElementById("checkinTag");
     const checkinSub  = document.getElementById("checkinSub");
+    const homeUncheckBtn = document.getElementById("homeUncheckBtn");
 
     const orderItem = document.getElementById("orderItem");
     const orderNote = document.getElementById("orderNote");
     const mapItem   = document.getElementById("mapItem");
     const mapNote   = document.getElementById("mapNote");
 
-    function getCheckinData(){
+    function getCheckinRaw(){
       for(const k of CHECKIN_KEYS){
         const raw = localStorage.getItem(k);
         if(!raw) continue;
-        try{
-          const data = JSON.parse(raw);
-          // dataが単純trueの場合なども吸収
-          if(data) return { key:k, data };
-        }catch{
-          // JSONでなくても値があれば「チェックイン済み」として扱う
-          return { key:k, data: raw };
-        }
+        return { key:k, raw };
       }
       return null;
     }
 
     function isCheckedIn(){
-      return !!getCheckinData();
+      return !!getCheckinRaw();
+    }
+
+    function clearCheckinAllKeys(){
+      for(const k of CHECKIN_KEYS){
+        localStorage.removeItem(k);
+      }
     }
 
     function render(mode){
@@ -348,7 +367,7 @@
       btnToday.classList.toggle("active", today);
       btnNotToday.classList.toggle("active", !today);
 
-      // ✅ 当日だけチェックイン活性
+      // 当日だけチェックイン活性
       if(today){
         checkinItem.classList.remove("disabled");
         checkinNote.style.display = "none";
@@ -357,16 +376,18 @@
         checkinNote.style.display = "";
       }
 
-      // ✅ チェックイン済み表示
+      // チェックイン済み表示＆ホーム解除表示
       if(checkedIn){
         checkinTag.style.display = "";
+        homeUncheckBtn.style.display = "";
         checkinSub.textContent = "チェックイン済み（確認）";
       }else{
         checkinTag.style.display = "none";
+        homeUncheckBtn.style.display = "none";
         checkinSub.textContent = "当日の受付";
       }
 
-      // ✅ 当日 & チェックイン済み のときだけ、オーダー/館内マップ活性
+      // 当日 & チェックイン済み のときだけ、オーダー/館内マップ活性
       if(today && checkedIn){
         orderItem.classList.remove("disabled");
         mapItem.classList.remove("disabled");
@@ -393,10 +414,18 @@
       render("not_today");
     };
 
-    // ✅ checkin.htmlから戻ってきた時に反映（BFCache/戻る対策）
+    // ✅ ホームでチェックイン解除（モック）
+    homeUncheckBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation(); // 親のaリンクへ飛ばないように
+      clearCheckinAllKeys();
+      render(localStorage.getItem(DAY_KEY) || "not_today");
+      alert("チェックインを解除しました（モック）。");
+    });
+
+    // ✅ checkin.htmlから戻ってきた時に反映
     window.addEventListener("pageshow", () => {
-      const saved2 = localStorage.getItem(DAY_KEY) || "not_today";
-      render(saved2);
+      render(localStorage.getItem(DAY_KEY) || "not_today");
     });
   </script>
 </body>
