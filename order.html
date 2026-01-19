@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>オーダー</title>
-
+  <title>オーダー（購入）</title>
   <style>
     :root{
       --bg:#ffffff;
@@ -18,7 +17,6 @@
 
       --primary:#111827;
       --blue:#2563eb;
-      --ok:#16a34a;
       --danger:#dc2626;
 
       --tap:56px;
@@ -35,9 +33,10 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
       background: var(--bg);
       color: var(--text);
+      padding-bottom: 92px; /* bottom bar space */
     }
 
-    /* ===== 共通ヘッダー（左なし／中央タイトル／右ホーム＋トグル） ===== */
+    /* ===== Header ===== */
     .header{
       height:64px;
       display:grid;
@@ -48,7 +47,7 @@
       background:#fff;
       position:sticky;
       top:0;
-      z-index:10;
+      z-index:50;
       gap:8px;
     }
     .header-title{
@@ -65,6 +64,19 @@
       align-items:center;
       gap:8px;
     }
+
+    .iconBtn{
+      width:44px;height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+    }
+    .iconBtn:active{ background:#f3f4f6; }
+    .iconBtn svg{ width:22px;height:22px; }
+
     .header-home{
       font-size:18px;
       font-weight:900;
@@ -73,11 +85,8 @@
       white-space:nowrap;
     }
 
-    /* 役割トグル（喪主／同行者） */
-    .role-switch{
-      display:flex;
-      gap:4px;
-    }
+    /* role switch */
+    .role-switch{ display:flex; gap:4px; }
     .role-switch button{
       border:1px solid var(--line);
       background:#fff;
@@ -135,7 +144,99 @@
       white-space:nowrap;
     }
 
-    /* 商品リスト */
+    /* disabled banner */
+    .banner{
+      border:1px solid #fde68a;
+      background:#fffbeb;
+      color:#92400e;
+      border-radius:16px;
+      padding:12px 14px;
+      font-weight:900;
+      line-height:1.4;
+    }
+
+    /* ===== Settlement QR ===== */
+    .qrBig{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .qrBox{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .qrWrap{
+      display:flex;
+      justify-content:center;
+      padding:6px 0 2px;
+    }
+    .qr{
+      width:270px;
+      height:270px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:#fff;
+      display:grid;
+      place-items:center;
+      box-shadow: 0 10px 28px rgba(17,24,39,.06);
+    }
+    .qr svg{ width:248px; height:248px; display:block; }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      font-weight:900;
+    }
+    .row .label{ font-size:14px; color:var(--muted); }
+    .row .value{ font-size:20px; }
+
+    .toggleLine{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: var(--soft);
+      font-weight:900;
+    }
+    .toggleLine input{ width:20px; height:20px; }
+
+    /* ===== Popular sticky ===== */
+    .stickyPopular{
+      position: sticky;
+      top: 64px; /* header height */
+      z-index:40;
+    }
+
+    /* ===== Search ===== */
+    .search{
+      padding:12px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .search input{
+      flex:1;
+      height:52px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      padding:0 14px;
+      font-size:16px;
+      font-weight:800;
+      outline:none;
+      background:#fff;
+    }
+
+    /* Product list */
     .list{ padding:12px; display:flex; flex-direction:column; gap:10px; }
     .item{
       border:1px solid var(--line);
@@ -146,6 +247,7 @@
       justify-content:space-between;
       gap:10px;
       background:#fff;
+      opacity:.75; /* all disabled */
     }
     .left{
       display:flex;
@@ -174,13 +276,7 @@
       font-weight: 900;
       color:#111827;
     }
-
-    .right{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex: 0 0 auto;
-    }
+    .right{ display:flex; align-items:center; gap:10px; flex: 0 0 auto; }
 
     .qty{
       display:inline-flex;
@@ -190,6 +286,7 @@
       overflow:hidden;
       height:48px;
       background:#fff;
+      opacity:.7;
     }
     .qty button{
       width:48px;
@@ -198,167 +295,15 @@
       background:#fff;
       font-size:22px;
       font-weight:900;
-      cursor:pointer;
+      cursor:not-allowed;
     }
-    .qty button:active{ background:#f3f4f6; }
     .qty .n{
       width:48px;
       text-align:center;
       font-size:18px;
       font-weight:900;
+      color:#374151;
     }
-
-    /* カート */
-    .cart{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .cartRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
-    }
-    .cartRow .cname{
-      font-size:16px;
-      font-weight:900;
-      min-width:0;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .cartRow .csub{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:800;
-      margin-top:4px;
-    }
-    .cartRow .cinfo{
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-    }
-    .cartRow .cright{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex:0 0 auto;
-    }
-    .del{
-      width:44px;height:44px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-size:18px;
-      cursor:pointer;
-    }
-    .del:active{ background:#fef2f2; border-color:#fecaca; }
-
-    .sum{
-      padding:14px 16px;
-      border-top:1px solid var(--line);
-      background: var(--soft);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      font-weight:900;
-    }
-    .sum .total{
-      font-size:20px;
-    }
-
-    .actions{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .btn{
-      height: var(--tap);
-      border-radius:16px;
-      border:0;
-      font-size:18px;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow: var(--shadow);
-    }
-    .btn.primary{ background: var(--ok); color:#fff; }
-    .btn.secondary{
-      background:#fff;
-      color: var(--text);
-      border:1px solid var(--line);
-      box-shadow:none;
-      font-weight:900;
-    }
-    .btn.danger{
-      background:#fff;
-      color: var(--danger);
-      border:1px solid #fecaca;
-      box-shadow:none;
-      font-weight:900;
-    }
-    .btn:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-      box-shadow:none;
-    }
-
-    /* ===== 精算 ===== */
-    .pay{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .payBox{
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .payRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      font-weight:900;
-    }
-    .payRow .label{
-      font-size:14px;
-      color: var(--muted);
-      font-weight:900;
-    }
-    .payRow .value{
-      font-size:20px;
-      color: var(--text);
-      font-weight:900;
-    }
-    .qrWrap{
-      display:flex;
-      justify-content:center;
-      padding:10px 0 2px;
-    }
-    .qr{
-      width:220px;
-      height:220px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:#fff;
-      display:grid;
-      place-items:center;
-      box-shadow: 0 10px 28px rgba(17,24,39,.06);
-    }
-    .qr svg{ width:200px; height:200px; display:block; }
 
     .smallNote{
       padding:10px 16px 14px;
@@ -367,6 +312,41 @@
       font-weight:800;
       line-height:1.4;
       text-align:center;
+    }
+
+    /* Bottom bar (host only) */
+    .bottomBar{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      background:#fff;
+      border-top:1px solid var(--line);
+      padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+      z-index:60;
+    }
+    .bottomInner{
+      max-width: var(--max);
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px 14px;
+      box-shadow: var(--shadow);
+    }
+    .bottomInner .t{ font-weight:900; color:#374151; }
+    .bottomInner .v{ font-weight:900; font-size:20px; }
+    .bottomInner .btnMini{
+      height:44px;
+      padding:0 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#f3f4f6;
+      font-weight:900;
+      cursor:not-allowed;
+      color:#6b7280;
+      white-space:nowrap;
     }
   </style>
 </head>
@@ -377,122 +357,144 @@
     <div class="header-title">オーダー</div>
 
     <div class="header-right">
+      <button class="iconBtn" type="button" id="cartGo" aria-label="カートへ">
+        <!-- cart icon -->
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6h15l-2 9H8L6 6Z" stroke="#111827" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M6 6 5 3H2" stroke="#111827" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="9" cy="20" r="1.6" fill="#111827"/>
+          <circle cx="18" cy="20" r="1.6" fill="#111827"/>
+        </svg>
+      </button>
+
       <div class="role-switch" aria-label="表示切替">
         <button id="btnHost" type="button">喪主</button>
-        <button id="btnGuest" type="button">同行者</button>
+        <button id="btnCompanion" type="button">同行者</button>
       </div>
       <a class="header-home" href="./index.html">ホーム</a>
     </div>
   </header>
 
   <div class="wrap">
+    <div class="banner">現在、オーダー機能は停止中です（表示のみ）。</div>
 
-    <!-- 商品 -->
-    <section class="card">
+    <!-- 精算QR（喪主 + 精算確定 ON のときだけ表示） -->
+    <section class="card" id="qrSection" style="display:none;">
       <div class="card-hd">
-        <div class="h">商品</div>
-        <div class="pill">売店</div>
+        <div class="h">精算QRコード</div>
+        <div class="pill">喪主のみ</div>
       </div>
-      <div class="list" id="productList"></div>
-    </section>
-
-    <!-- カート -->
-    <section class="card">
-      <div class="card-hd">
-        <div class="h">カート</div>
-        <div class="pill" id="countPill">0点</div>
-      </div>
-
-      <div class="cart" id="cart"></div>
-
-      <div class="sum">
-        <div>合計</div>
-        <div class="total" id="total">¥0</div>
-      </div>
-
-      <div class="actions">
-        <button class="btn primary" id="orderBtn" disabled>注文する</button>
-        <button class="btn secondary" id="saveBtn" disabled>注文内容を保存</button>
-        <button class="btn danger" id="clearBtn" disabled>カートを空にする</button>
-      </div>
-
-      <!-- 精算（喪主のみ表示） -->
-      <div id="paySection">
-        <div class="card-hd" style="border-top:1px solid var(--line);">
-          <div class="h">精算</div>
-          <div class="pill">喪主のみ</div>
-        </div>
-
-        <div class="pay">
-          <div class="payBox">
-            <div class="payRow">
-              <div class="label">精算金額</div>
-              <div class="value" id="payTotal">¥0</div>
-            </div>
-
-            <div class="qrWrap">
-              <div class="qr" aria-label="精算QRコード">
-                <div id="qrHost"></div>
-              </div>
+      <div class="qrBig">
+        <div class="qrBox">
+          <div class="row">
+            <div class="label">精算金額</div>
+            <div class="value" id="payTotal">¥0</div>
+          </div>
+          <div class="qrWrap">
+            <div class="qr" aria-label="精算QRコード">
+              <div id="qrHost"></div>
             </div>
           </div>
         </div>
 
-        <div class="smallNote">※喪主の画面のみ表示されます</div>
-      </div>
+        <!-- デモ用（管理画面で確定した想定の切替） -->
+        <label class="toggleLine">
+          <span>（デモ）精算確定</span>
+          <input id="settledToggle" type="checkbox" />
+        </label>
 
-      <!-- 同行者のときだけ見せる注記（精算が無い理由を明示） -->
-      <div class="smallNote" id="guestNote" style="display:none;">
-        ※喪主の画面のみ表示されます
+        <div class="smallNote">※管理画面で精算金額が確定したら表示される想定です</div>
       </div>
-
     </section>
 
+    <!-- 人気商品（固定表示） -->
+    <section class="card stickyPopular">
+      <div class="card-hd">
+        <div class="h">人気商品</div>
+        <div class="pill">固定</div>
+      </div>
+      <div class="list" id="popularList"></div>
+    </section>
+
+    <!-- 商品一覧 + 検索 -->
+    <section class="card">
+      <div class="card-hd">
+        <div class="h">商品一覧</div>
+        <div class="pill">売店</div>
+      </div>
+
+      <div class="search">
+        <input id="searchInput" type="search" placeholder="商品名で検索" autocomplete="off" />
+      </div>
+
+      <div class="list" id="productList"></div>
+      <div class="smallNote">※オーダー停止中のため数量変更はできません</div>
+    </section>
+  </div>
+
+  <!-- bottom (host only) -->
+  <div class="bottomBar" id="bottomBar" style="display:none;">
+    <div class="bottomInner">
+      <div>
+        <div class="t">精算金額 合計</div>
+        <div class="v" id="bottomTotal">¥0</div>
+      </div>
+      <button class="btnMini" type="button" disabled>精算（停止中）</button>
+    </div>
   </div>
 
   <script>
-    // ===== デモ商品（売店のみ） =====
-    const PRODUCTS = [
-      { id:"s1", name:"お茶（ペットボトル）", price:160 },
-      { id:"s2", name:"水（ペットボトル）", price:120 },
-      { id:"s3", name:"おしぼり", price:80 },
-      { id:"s4", name:"のど飴", price:150 },
-      { id:"s5", name:"ハンカチ", price:300 },
+    // ===== demo products =====
+    const POPULAR_FIXED = [
+      { id:"p_beer", name:"瓶ビール", price:600 },
+      { id:"p_tea",  name:"お茶（ペットボトル）", price:160 },
+      { id:"p_wet",  name:"おしぼり", price:80 },
     ];
 
-    // ===== ローカルストレージ =====
+    const PRODUCTS = [
+      ...POPULAR_FIXED,
+      { id:"s_water", name:"水（ペットボトル）", price:120 },
+      { id:"s_candy", name:"のど飴", price:150 },
+      { id:"s_towel", name:"ハンカチ", price:300 },
+      { id:"s_coffee", name:"コーヒー（缶）", price:140 },
+      { id:"s_choco", name:"チョコレート", price:220 },
+    ];
+
+    // ===== localStorage keys =====
     const LS_CART = "miniapp_cart";
-    const LS_ROLE = "miniapp_role"; // "host" | "guest"
+    const LS_ROLE = "miniapp_role"; // "host" | "companion"
+    const LS_SETTLED = "miniapp_settled"; // "1" | "0"
 
-    // デフォルトは喪主
-    if(!localStorage.getItem(LS_ROLE)){
-      localStorage.setItem(LS_ROLE, "host");
-    }
+    if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
+    if(localStorage.getItem(LS_SETTLED) == null) localStorage.setItem(LS_SETTLED, "0");
 
-    // ===== 要素 =====
-    const listEl = document.getElementById("productList");
-    const cartEl = document.getElementById("cart");
-    const totalEl = document.getElementById("total");
-    const countPill = document.getElementById("countPill");
+    // ===== elements =====
+    const btnHost = document.getElementById("btnHost");
+    const btnCompanion = document.getElementById("btnCompanion");
+    const cartGo = document.getElementById("cartGo");
 
-    const orderBtn = document.getElementById("orderBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const clearBtn = document.getElementById("clearBtn");
+    const popularListEl = document.getElementById("popularList");
+    const productListEl = document.getElementById("productList");
+    const searchInput = document.getElementById("searchInput");
 
-    const paySection = document.getElementById("paySection");
-    const guestNote = document.getElementById("guestNote");
+    const qrSection = document.getElementById("qrSection");
     const payTotalEl = document.getElementById("payTotal");
     const qrHost = document.getElementById("qrHost");
+    const settledToggle = document.getElementById("settledToggle");
 
-    const btnHost = document.getElementById("btnHost");
-    const btnGuest = document.getElementById("btnGuest");
+    const bottomBar = document.getElementById("bottomBar");
+    const bottomTotal = document.getElementById("bottomTotal");
 
-    // ===== 状態 =====
-    let cart = loadCart();
-
-    // ===== util =====
-    function yen(n){ return "¥" + n.toLocaleString("ja-JP"); }
-
+    // ===== utils =====
+    function yen(n){ return "¥" + Number(n||0).toLocaleString("ja-JP"); }
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
     function loadCart(){
       try{
         const raw = localStorage.getItem(LS_CART);
@@ -503,36 +505,17 @@
         return {};
       }
     }
-    function persistCart(){ localStorage.setItem(LS_CART, JSON.stringify(cart)); }
-
-    function qtyOf(id){ return cart[id] || 0; }
-    function setQty(id, qty){
-      if(qty <= 0) delete cart[id];
-      else cart[id] = qty;
-      persistCart();
-      render();
-    }
-
-    function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
     function cartTotal(){
+      const cart = loadCart();
       let sum=0;
       for(const [id, qty] of Object.entries(cart)){
         const p = PRODUCTS.find(x=>x.id===id);
-        if(p) sum += p.price * qty;
+        if(p) sum += p.price * Number(qty||0);
       }
       return sum;
     }
 
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    // ===== QR（モック：それっぽいSVG） =====
+    // ===== QR mock =====
     function hash(str){
       let h = 2166136261;
       for(let i=0;i<str.length;i++){
@@ -544,7 +527,7 @@
     function renderFakeQR(payload){
       const seed = hash(payload);
       const size = 21;
-      const cell = 200 / size;
+      const cell = 248 / size;
       let cells = "";
 
       function rect(x,y){
@@ -576,8 +559,8 @@
       finder(0,0); finder(size-7,0); finder(0,size-7);
 
       return `
-        <svg viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="QR">
-          <rect x="0" y="0" width="200" height="200" fill="#fff"/>
+        <svg viewBox="0 0 248 248" width="248" height="248" role="img" aria-label="QR">
+          <rect x="0" y="0" width="248" height="248" fill="#fff"/>
           ${cells}
         </svg>
       `;
@@ -588,146 +571,105 @@
     function setRole(role){
       localStorage.setItem(LS_ROLE, role);
       renderRole();
-      renderSettlement();
     }
-    function renderRole(){
-      const role = getRole();
-      const isHost = role === "host";
-      btnHost.classList.toggle("active", isHost);
-      btnGuest.classList.toggle("active", !isHost);
-
-      // 喪主のみ：精算表示
-      paySection.style.display = isHost ? "" : "none";
-      guestNote.style.display = isHost ? "none" : "";
-    }
+    function isSettled(){ return (localStorage.getItem(LS_SETTLED) || "0") === "1"; }
+    function setSettled(v){ localStorage.setItem(LS_SETTLED, v ? "1" : "0"); }
 
     btnHost.addEventListener("click", ()=>setRole("host"));
-    btnGuest.addEventListener("click", ()=>setRole("guest"));
+    btnCompanion.addEventListener("click", ()=>setRole("companion"));
+    cartGo.addEventListener("click", ()=>{ location.href = "./cart.html"; });
+
+    settledToggle.addEventListener("change", ()=>{
+      setSettled(settledToggle.checked);
+      renderSettlement();
+    });
 
     // ===== render =====
-    function renderProducts(){
-      listEl.innerHTML = PRODUCTS.map(p => {
-        const q = qtyOf(p.id);
-        return `
-          <div class="item">
-            <div class="left">
-              <div class="name">${escapeHtml(p.name)}</div>
-              <div class="meta"><span class="price">${yen(p.price)}</span></div>
-            </div>
-            <div class="right">
-              <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
-                <button type="button" data-act="minus" data-id="${p.id}" aria-label="減らす">−</button>
-                <div class="n">${q}</div>
-                <button type="button" data-act="plus" data-id="${p.id}" aria-label="増やす">＋</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
+    function renderRole(){
+      const role = getRole();
+      const host = role === "host";
+      btnHost.classList.toggle("active", host);
+      btnCompanion.classList.toggle("active", !host);
 
-      listEl.querySelectorAll("button[data-act]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-id");
-          const act = btn.getAttribute("data-act");
-          const cur = qtyOf(id);
-          setQty(id, act === "plus" ? cur + 1 : Math.max(0, cur - 1));
-        });
-      });
-    }
+      // bottom bar (host only)
+      bottomBar.style.display = host ? "" : "none";
 
-    function renderCart(){
-      const entries = Object.entries(cart).filter(([id,qty])=>qty>0);
+      // settled toggle sync
+      settledToggle.checked = isSettled();
 
-      countPill.textContent = `${cartCount()}点`;
-      totalEl.textContent = yen(cartTotal());
-
-      const has = entries.length > 0;
-      orderBtn.disabled = !has;
-      saveBtn.disabled = !has;
-      clearBtn.disabled = !has;
-
-      if(!has){
-        cartEl.innerHTML = `<div style="padding:12px;color:#6b7280;font-weight:800;">カートは空です。</div>`;
-        return;
-      }
-
-      cartEl.innerHTML = entries.map(([id, qty])=>{
-        const p = PRODUCTS.find(x=>x.id===id);
-        if(!p) return "";
-        const subtotal = p.price * qty;
-        return `
-          <div class="cartRow">
-            <div class="cinfo">
-              <div class="cname">${escapeHtml(p.name)}</div>
-              <div class="csub">${yen(p.price)} × ${qty} = ${yen(subtotal)}</div>
-            </div>
-            <div class="cright">
-              <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
-                <button type="button" data-cact="minus" data-id="${id}" aria-label="減らす">−</button>
-                <div class="n">${qty}</div>
-                <button type="button" data-cact="plus" data-id="${id}" aria-label="増やす">＋</button>
-              </div>
-              <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      cartEl.querySelectorAll("button[data-cact]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-id");
-          const act = btn.getAttribute("data-cact");
-          const cur = qtyOf(id);
-          setQty(id, act === "plus" ? cur + 1 : Math.max(0, cur - 1));
-        });
-      });
-
-      cartEl.querySelectorAll("button[data-del]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-del");
-          setQty(id, 0);
-        });
-      });
+      renderSettlement();
+      renderBottom();
     }
 
     function renderSettlement(){
-      const role = getRole();
-      if(role !== "host") return;
-
+      const host = getRole() === "host";
+      const settled = isSettled();
       const total = cartTotal();
+
+      // QR is shown only when host AND settled
+      qrSection.style.display = (host && settled) ? "" : "none";
+
+      // totals
       payTotalEl.textContent = yen(total);
 
-      const payId = `PAY|TOTAL=${total}|DATE=${new Date().toISOString().slice(0,10)}`;
-      qrHost.innerHTML = renderFakeQR(payId);
+      if(host && settled){
+        const payId = `PAY|TOTAL=${total}|DATE=${new Date().toISOString().slice(0,10)}`;
+        qrHost.innerHTML = renderFakeQR(payId);
+      }else{
+        qrHost.innerHTML = "";
+      }
     }
+
+    function renderBottom(){
+      bottomTotal.textContent = yen(cartTotal());
+    }
+
+    function renderProductItem(p){
+      // all disabled: qty fixed display only (reads from cart)
+      const cart = loadCart();
+      const q = Number(cart[p.id] || 0);
+
+      return `
+        <div class="item">
+          <div class="left">
+            <div class="name">${escapeHtml(p.name)}</div>
+            <div class="meta"><span class="price">${yen(p.price)}</span></div>
+          </div>
+          <div class="right">
+            <div class="qty" aria-label="${escapeHtml(p.name)} 数量（停止中）">
+              <button type="button" disabled aria-label="減らす">−</button>
+              <div class="n">${q}</div>
+              <button type="button" disabled aria-label="増やす">＋</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPopular(){
+      popularListEl.innerHTML = POPULAR_FIXED.map(renderProductItem).join("");
+    }
+
+    function renderProducts(){
+      const kw = (searchInput.value || "").trim().toLowerCase();
+      const list = PRODUCTS.filter(p=>{
+        if(!kw) return !POPULAR_FIXED.some(x=>x.id===p.id); // popularは別枠
+        return p.name.toLowerCase().includes(kw) && !POPULAR_FIXED.some(x=>x.id===p.id);
+      });
+      productListEl.innerHTML = list.map(renderProductItem).join("");
+
+      // 検索時、人気商品は表示したまま（固定）
+    }
+
+    searchInput.addEventListener("input", renderProducts);
 
     function render(){
       renderRole();
+      renderPopular();
       renderProducts();
-      renderCart();
-      renderSettlement();
+      renderBottom();
     }
 
-    // ===== actions =====
-    orderBtn.addEventListener("click", ()=>{
-      const total = cartTotal();
-      alert(`注文しました（デモ）\n合計：${yen(total)}`);
-      renderSettlement();
-    });
-
-    saveBtn.addEventListener("click", ()=>{
-      persistCart();
-      alert("注文内容を保存しました（デモ）。");
-      renderSettlement();
-    });
-
-    clearBtn.addEventListener("click", ()=>{
-      cart = {};
-      persistCart();
-      render();
-    });
-
-    // 初期描画
     render();
   </script>
 </body>
