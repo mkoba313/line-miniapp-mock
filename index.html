@@ -232,23 +232,7 @@
 
         <nav class="menu">
 
-          <!-- チェックイン -->
-          <a class="item" id="checkinItem" href="./checkin.html">
-            <div class="left">
-              <div class="icon">✅</div>
-              <div class="text">
-                <div class="label">チェックイン</div>
-                <div class="sub" id="checkinSub">当日の受付</div>
-                <div class="note" id="checkinNote">※当日以外は非表示になります</div>
-                <div class="tag" id="checkinTag" style="display:none;">
-                  <span class="miniDot"></span>チェックイン済み
-                </div>
-              </div>
-            </div>
-            <div class="chev">›</div>
-          </a>
-
-          <!-- マイページ -->
+          <!-- ✅ マイページ（先頭） -->
           <a class="item" href="./mypage.html">
             <div class="left">
               <div class="icon">👤</div>
@@ -260,27 +244,43 @@
             <div class="chev">›</div>
           </a>
 
-          <!-- オーダー -->
+          <!-- ✅ チェックイン（当日のみ活性） -->
+          <a class="item" id="checkinItem" href="./checkin.html">
+            <div class="left">
+              <div class="icon">✅</div>
+              <div class="text">
+                <div class="label">チェックイン</div>
+                <div class="sub" id="checkinSub">当日の受付</div>
+                <div class="note" id="checkinNote">※当日以外は非活性になります</div>
+                <div class="tag" id="checkinTag" style="display:none;">
+                  <span class="miniDot"></span>チェックイン済み
+                </div>
+              </div>
+            </div>
+            <div class="chev">›</div>
+          </a>
+
+          <!-- オーダー（当日かつチェックイン後に活性） -->
           <a class="item" id="orderItem" href="./order.html">
             <div class="left">
               <div class="icon">🛒</div>
               <div class="text">
                 <div class="label">オーダー</div>
                 <div class="sub">売店</div>
-                <div class="note" id="orderNote">※チェックイン後に表示されます</div>
+                <div class="note" id="orderNote">※チェックイン後に利用できます</div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
-          <!-- 館内マップ -->
+          <!-- 館内マップ（当日かつチェックイン後に活性） -->
           <a class="item" id="mapItem" href="./map.html">
             <div class="left">
               <div class="icon">🗺️</div>
               <div class="text">
                 <div class="label">館内マップ</div>
                 <div class="sub">地図／導線</div>
-                <div class="note" id="mapNote">※チェックイン後に表示されます</div>
+                <div class="note" id="mapNote">※チェックイン後に利用できます</div>
               </div>
             </div>
             <div class="chev">›</div>
@@ -293,12 +293,20 @@
   </div>
 
   <script>
-  // 未登録なら必ず会員登録へ
-if(localStorage.getItem("miniapp_registered") !== "1"){
-  location.replace("./register.html");
-}
+    // 未登録なら必ず会員登録へ
+    if(localStorage.getItem("miniapp_registered") !== "1"){
+      location.replace("./register.html");
+    }
+
     const DAY_KEY = "miniapp_day_mode";
-    const CHECKIN_KEY = "miniapp_checkin_done";
+
+    // ✅ 互換：checkin.htmlのキーが複数ある前提で拾う
+    const CHECKIN_KEYS = [
+      "miniapp_checkin_done",        // 旧
+      "miniapp_checkin_done_v2",     // 以前提案のv2
+      "miniapp_checkin_done_soft",   // ソフトおすすめ版
+      "miniapp_checkin_done_force"   // 強制版（過去の残骸でも拾う）
+    ];
 
     const btnToday = document.getElementById("btnToday");
     const btnNotToday = document.getElementById("btnNotToday");
@@ -306,18 +314,31 @@ if(localStorage.getItem("miniapp_registered") !== "1"){
     const checkinItem = document.getElementById("checkinItem");
     const checkinNote = document.getElementById("checkinNote");
     const checkinTag  = document.getElementById("checkinTag");
+    const checkinSub  = document.getElementById("checkinSub");
 
     const orderItem = document.getElementById("orderItem");
     const orderNote = document.getElementById("orderNote");
     const mapItem   = document.getElementById("mapItem");
     const mapNote   = document.getElementById("mapNote");
 
-    function isCheckedIn(){
-      try{
-        return !!JSON.parse(localStorage.getItem(CHECKIN_KEY));
-      }catch{
-        return false;
+    function getCheckinData(){
+      for(const k of CHECKIN_KEYS){
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        try{
+          const data = JSON.parse(raw);
+          // dataが単純trueの場合なども吸収
+          if(data) return { key:k, data };
+        }catch{
+          // JSONでなくても値があれば「チェックイン済み」として扱う
+          return { key:k, data: raw };
+        }
       }
+      return null;
+    }
+
+    function isCheckedIn(){
+      return !!getCheckinData();
     }
 
     function render(mode){
@@ -327,6 +348,7 @@ if(localStorage.getItem("miniapp_registered") !== "1"){
       btnToday.classList.toggle("active", today);
       btnNotToday.classList.toggle("active", !today);
 
+      // ✅ 当日だけチェックイン活性
       if(today){
         checkinItem.classList.remove("disabled");
         checkinNote.style.display = "none";
@@ -335,14 +357,16 @@ if(localStorage.getItem("miniapp_registered") !== "1"){
         checkinNote.style.display = "";
       }
 
+      // ✅ チェックイン済み表示
       if(checkedIn){
         checkinTag.style.display = "";
-        document.getElementById("checkinSub").textContent = "当日QRの確認";
+        checkinSub.textContent = "チェックイン済み（確認）";
       }else{
         checkinTag.style.display = "none";
-        document.getElementById("checkinSub").textContent = "当日の受付";
+        checkinSub.textContent = "当日の受付";
       }
 
+      // ✅ 当日 & チェックイン済み のときだけ、オーダー/館内マップ活性
       if(today && checkedIn){
         orderItem.classList.remove("disabled");
         mapItem.classList.remove("disabled");
@@ -356,6 +380,7 @@ if(localStorage.getItem("miniapp_registered") !== "1"){
       }
     }
 
+    // 初期表示
     const saved = localStorage.getItem(DAY_KEY) || "not_today";
     render(saved);
 
@@ -367,6 +392,12 @@ if(localStorage.getItem("miniapp_registered") !== "1"){
       localStorage.setItem(DAY_KEY,"not_today");
       render("not_today");
     };
+
+    // ✅ checkin.htmlから戻ってきた時に反映（BFCache/戻る対策）
+    window.addEventListener("pageshow", () => {
+      const saved2 = localStorage.getItem(DAY_KEY) || "not_today";
+      render(saved2);
+    });
   </script>
 </body>
 </html>
