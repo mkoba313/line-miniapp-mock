@@ -12,6 +12,8 @@
       --muted:#6b7280;
       --line:#e5e7eb;
       --radius:16px;
+      --accent:#2563eb;
+      --chip:#f3f4f6;
     }
 
     body{
@@ -44,7 +46,7 @@
       font-size:18px;
       font-weight:700;
       text-decoration:none;
-      color:#2563eb;
+      color:var(--accent);
     }
 
     /* ===== コンテンツ ===== */
@@ -61,6 +63,7 @@
       display:flex;
       flex-direction:column;
       gap:18px;
+      background:#fff;
     }
 
     .row{
@@ -76,14 +79,69 @@
 
     .value{
       font-size:20px;
-      font-weight:700;
+      font-weight:800;
+      line-height:1.25;
     }
 
     .tel{
       font-size:20px;
-      font-weight:700;
-      color:#2563eb;
+      font-weight:800;
+      color:var(--accent);
       text-decoration:none;
+    }
+
+    .divider{
+      height:1px;
+      background:var(--line);
+      margin:4px 0;
+    }
+
+    .section-title{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing: .02em;
+    }
+
+    .help-box{
+      background:var(--chip);
+      border-radius:12px;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .help-actions{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:2px;
+    }
+
+    .btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:52px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      text-decoration:none;
+      font-size:18px;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .btn-primary{
+      border-color:rgba(37,99,235,.35);
+      color:var(--accent);
+      background:#fff;
+    }
+
+    .note{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.5;
     }
   </style>
 </head>
@@ -120,6 +178,35 @@
         <div class="label">式場 電話番号</div>
         <a class="tel" href="tel:0312345678">03-1234-5678</a>
       </div>
+
+      <!-- ▼ ここから追加：お問い合わせ -->
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="section-title">お問い合わせ</div>
+
+        <div class="help-box">
+          <div class="row" style="gap:4px;">
+            <div class="label">予約内容の確認・変更、当日のご連絡</div>
+            <!-- TODO: 代表窓口の番号に差し替え -->
+            <a class="tel" href="tel:0312345678">03-1234-5678</a>
+            <!-- TODO: 受付時間を差し替え -->
+            <div class="note">受付時間：9:00〜17:00（年末年始を除く）</div>
+          </div>
+
+          <div class="help-actions">
+            <a class="btn btn-primary" href="tel:0312345678">電話する</a>
+            <!-- メール運用する場合のみ：不要なら行ごと削除OK -->
+            <a class="btn" href="mailto:info@example.com?subject=予約に関するお問い合わせ">メールする</a>
+          </div>
+
+          <div class="note">
+            ※緊急の場合はお電話をご利用ください。<br />
+            ※受付時間外は、翌営業時間内にご連絡いたします。
+          </div>
+        </div>
+      </div>
+      <!-- ▲ ここまで追加：お問い合わせ -->
 
     </div>
   </div>
