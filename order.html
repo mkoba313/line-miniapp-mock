@@ -19,11 +19,8 @@
       --primary:#111827;
       --blue:#2563eb;
       --ok:#16a34a;
-      --danger:#dc2626;
 
-      --tap:56px;
       --max:520px;
-
       --title:22px;
       --label:18px;
       --sub:14px;
@@ -35,7 +32,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 96px; /* bottom bar space */
+      padding-bottom: 96px;
     }
 
     /* ===== Header ===== */
@@ -143,19 +140,19 @@
     }
     .toggle input{ width:18px;height:18px; }
 
-    /* Stop banner */
-    .stopBanner{
+    /* Locked banner */
+    .lockBanner{
       position:sticky;
       top:64px;
       z-index:55;
-      border-bottom:1px solid #fecaca;
-      background:#fff1f2;
-      color:#991b1b;
+      border-bottom:1px solid #bbf7d0;
+      background:#f0fdf4;
+      color:#166534;
       font-weight:900;
       padding:10px 12px;
       display:none;
     }
-    .stopBanner .inner{
+    .lockBanner .inner{
       max-width: var(--max);
       margin:0 auto;
       text-align:center;
@@ -246,7 +243,7 @@
     /* Popular sticky */
     .stickyPopular{
       position:sticky;
-      top: calc(64px + 42px); /* header + stop banner(rough) */
+      top: calc(64px + 42px); /* header + banner roughly */
       z-index:40;
     }
 
@@ -386,11 +383,11 @@
     .bottomInner .t{ font-weight:900; color:#374151; }
     .bottomInner .v{ font-weight:900; font-size:22px; }
 
-    /* STOP state */
-    .stopped .item{ opacity:.65; }
-    .stopped .qty{ pointer-events:none; opacity:.55; }
-    .stopped .addBtn{ pointer-events:none; }
-    .stopped .search input{ pointer-events:none; opacity:.6; background:#f9fafb; }
+    /* LOCK state (精算確定) */
+    .locked .item{ opacity:.65; }
+    .locked .qty{ pointer-events:none; opacity:.55; }
+    .locked .addBtn{ pointer-events:none; opacity:.55; }
+    .locked .search input{ pointer-events:none; opacity:.6; background:#f9fafb; }
   </style>
 </head>
 
@@ -411,20 +408,14 @@
         </svg>
       </button>
 
-      <!-- role + flags (横並び) -->
       <div class="toggleGroup">
         <div class="role-switch" aria-label="表示切替">
           <button id="btnHost" type="button">喪主</button>
           <button id="btnCompanion" type="button">同行者</button>
         </div>
 
-        <!-- ★ここが要望：切替の横に停止フラグ -->
-        <label class="toggle" title="オーダー停止">
-          <span>停止</span>
-          <input id="stopToggle" type="checkbox" />
-        </label>
-
-        <label class="toggle" id="settleToggleWrap" title="精算確定（喪主のみ）">
+        <!-- ★精算確定：ここがONなら喪主/同行者どちらもロック -->
+        <label class="toggle" title="精算確定">
           <span>精算確定</span>
           <input id="settleToggle" type="checkbox" />
         </label>
@@ -434,8 +425,8 @@
     </div>
   </header>
 
-  <div class="stopBanner" id="stopBanner">
-    <div class="inner">オーダー停止中です（現在ご注文いただけません）</div>
+  <div class="lockBanner" id="lockBanner">
+    <div class="inner">精算確定済みのため、数量変更・カート追加はできません</div>
   </div>
 
   <div class="wrap" id="appRoot">
@@ -493,7 +484,7 @@
         <div class="t">精算金額 合計</div>
         <div class="v" id="bottomTotal">¥0</div>
       </div>
-      <div class="pill" id="bottomNote">表示のみ</div>
+      <div class="pill">表示のみ</div>
     </div>
   </div>
 
@@ -515,29 +506,24 @@
     ];
 
     // ===== Storage Keys =====
-    const LS_CART = "miniapp_cart";               // { [id]: qty }
-    const LS_ROLE = "miniapp_role";               // "host" | "companion"
-    const LS_ORDER_STOP = "miniapp_order_stop";   // "1" stop | "0" run
-    const LS_SETTLED = "miniapp_settled";         // "1" settled | "0" not
+    const LS_CART = "miniapp_cart";       // { [id]: qty }
+    const LS_ROLE = "miniapp_role";       // "host" | "companion"
+    const LS_SETTLED = "miniapp_settled"; // "1" settled | "0" not
 
     // defaults
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
-    if(localStorage.getItem(LS_ORDER_STOP) == null) localStorage.setItem(LS_ORDER_STOP, "1"); // 初期：停止
     if(localStorage.getItem(LS_SETTLED) == null) localStorage.setItem(LS_SETTLED, "0");
 
     // ===== Elements =====
     const appRoot = document.getElementById("appRoot");
-    const stopBanner = document.getElementById("stopBanner");
+    const lockBanner = document.getElementById("lockBanner");
 
     const cartBtn = document.getElementById("cartBtn");
     const cartBadge = document.getElementById("cartBadge");
 
     const btnHost = document.getElementById("btnHost");
     const btnCompanion = document.getElementById("btnCompanion");
-
-    const stopToggle = document.getElementById("stopToggle");
     const settleToggle = document.getElementById("settleToggle");
-    const settleToggleWrap = document.getElementById("settleToggleWrap");
 
     const qrSection = document.getElementById("qrSection");
     const payTotalEl = document.getElementById("payTotal");
@@ -597,16 +583,15 @@
       renderAll();
     }
 
-    function isStopped(){ return (localStorage.getItem(LS_ORDER_STOP) || "1") === "1"; }
-    function setStopped(v){
-      localStorage.setItem(LS_ORDER_STOP, v ? "1" : "0");
-      renderAll();
-    }
-
     function isSettled(){ return (localStorage.getItem(LS_SETTLED) || "0") === "1"; }
     function setSettled(v){
       localStorage.setItem(LS_SETTLED, v ? "1" : "0");
       renderAll();
+    }
+
+    function isLocked(){
+      // ★喪主・同行者どちらでも、精算確定ONならロック
+      return isSettled();
     }
 
     // ===== Fake QR =====
@@ -660,17 +645,41 @@
       `;
     }
 
-    // ===== Actions =====
+    // ===== Navigation / UI events =====
     cartBtn.addEventListener("click", ()=>{ location.href = "./cart.html"; });
-
     btnHost.addEventListener("click", ()=>setRole("host"));
     btnCompanion.addEventListener("click", ()=>setRole("companion"));
-
-    stopToggle.addEventListener("change", ()=> setStopped(stopToggle.checked));
     settleToggle.addEventListener("change", ()=> setSettled(settleToggle.checked));
+    searchInput.addEventListener("input", ()=> renderProducts());
+
+    // ★イベント取りこぼし防止：イベント委譲で＋/−/追加を確実に動かす
+    document.addEventListener("click", (e)=>{
+      const t = e.target;
+      if(!(t instanceof Element)) return;
+
+      // ロック中は一切操作不可
+      if(isLocked()){
+        return;
+      }
+
+      const act = t.getAttribute("data-act");
+      const add = t.getAttribute("data-add");
+
+      if(act){
+        const id = t.getAttribute("data-id");
+        if(!id) return;
+        changePending(id, act === "plus" ? 1 : -1);
+        return;
+      }
+
+      if(add){
+        addToCart(add);
+        return;
+      }
+    });
 
     function addToCart(id){
-      if(isStopped()) return;
+      if(isLocked()) return;
 
       const qty = Number(pendingQty[id] || 0);
       if(qty <= 0) return;
@@ -678,17 +687,33 @@
       cart[id] = Number(cart[id] || 0) + qty;
       persistCart();
 
-      // 入力数量リセット（見た目も戻す）
+      // 入力数量リセット
       pendingQty[id] = 0;
       renderAll();
     }
 
     function changePending(id, delta){
-      if(isStopped()) return;
+      if(isLocked()) return;
       const cur = Number(pendingQty[id] || 0);
       const next = Math.max(0, cur + delta);
       pendingQty[id] = next;
-      renderProducts(); // 部分更新でOK
+      // 部分更新
+      updateRowQty(id);
+      updateAddButtons(id);
+    }
+
+    function updateRowQty(id){
+      // 同一商品が人気枠/一覧枠に両方あるケースに備えて複数更新
+      document.querySelectorAll(`[data-row="${id}"] .n`).forEach(el=>{
+        el.textContent = String(Number(pendingQty[id] || 0));
+      });
+    }
+    function updateAddButtons(id){
+      const locked = isLocked();
+      const q = Number(pendingQty[id] || 0);
+      document.querySelectorAll(`button[data-add="${id}"]`).forEach(btn=>{
+        btn.disabled = locked || q <= 0;
+      });
     }
 
     // ===== Render =====
@@ -699,21 +724,12 @@
       btnHost.classList.toggle("active", host);
       btnCompanion.classList.toggle("active", !host);
 
-      // stop toggle
-      stopToggle.checked = isStopped();
-      stopBanner.style.display = isStopped() ? "" : "none";
-      appRoot.classList.toggle("stopped", isStopped());
+      settleToggle.checked = isSettled();
 
-      // settle toggle: 喪主のみ有効（同行者ではOFF固定）
-      if(host){
-        settleToggleWrap.style.opacity = "1";
-        settleToggle.disabled = false;
-        settleToggle.checked = isSettled();
-      }else{
-        settleToggleWrap.style.opacity = ".45";
-        settleToggle.disabled = true;
-        settleToggle.checked = false;
-      }
+      // lock UI
+      const locked = isLocked();
+      appRoot.classList.toggle("locked", locked);
+      lockBanner.style.display = locked ? "" : "none";
 
       // cart badge
       const c = cartCount();
@@ -728,7 +744,7 @@
     function renderSettlement(){
       const role = getRole();
       const host = role === "host";
-      const settled = host && isSettled();
+      const settled = isSettled();
 
       const total = cartTotal();
       payTotalEl.textContent = yen(total);
@@ -738,8 +754,8 @@
       bottomBar.style.display = host ? "" : "none";
 
       // QR: 喪主 + 精算確定のみ表示
-      qrSection.style.display = settled ? "" : "none";
-      if(settled){
+      qrSection.style.display = (host && settled) ? "" : "none";
+      if(host && settled){
         const payId = `PAY|TOTAL=${total}|DATE=${new Date().toISOString().slice(0,10)}`;
         qrHost.innerHTML = renderFakeQR(payId);
       }else{
@@ -749,10 +765,10 @@
 
     function productRowHtml(p, isPopular){
       const inputQty = Number(pendingQty[p.id] || 0);
-      const disabled = isStopped();
+      const locked = isLocked();
 
       return `
-        <div class="item" data-id="${p.id}">
+        <div class="item" data-row="${p.id}">
           <div class="left">
             <div class="name">${escapeHtml(p.name)}${isPopular ? "（人気）" : ""}</div>
             <div class="meta"><span class="price">${yen(p.price)}</span></div>
@@ -761,11 +777,12 @@
           <div class="right">
             <div class="qtyBox">
               <div class="qty" aria-label="${escapeHtml(p.name)} 数量入力">
-                <button type="button" data-act="minus" data-id="${p.id}" ${disabled ? "disabled" : ""} aria-label="減らす">−</button>
-                <div class="n" id="n-${p.id}">${inputQty}</div>
-                <button type="button" data-act="plus" data-id="${p.id}" ${disabled ? "disabled" : ""} aria-label="増やす">＋</button>
+                <button type="button" data-act="minus" data-id="${p.id}" ${locked ? "disabled" : ""} aria-label="減らす">−</button>
+                <div class="n">${inputQty}</div>
+                <button type="button" data-act="plus" data-id="${p.id}" ${locked ? "disabled" : ""} aria-label="増やす">＋</button>
               </div>
-              <button class="addBtn" type="button" data-add="${p.id}" ${disabled || inputQty<=0 ? "disabled" : ""}>
+
+              <button class="addBtn" type="button" data-add="${p.id}" ${locked || inputQty<=0 ? "disabled" : ""}>
                 カートに入れる
               </button>
             </div>
@@ -774,42 +791,23 @@
       `;
     }
 
-    function bindRowEvents(scopeEl){
-      // plus/minus
-      scopeEl.querySelectorAll("button[data-act]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-id");
-          const act = btn.getAttribute("data-act");
-          changePending(id, act === "plus" ? 1 : -1);
-        });
-      });
-
-      // add to cart
-      scopeEl.querySelectorAll("button[data-add]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.getAttribute("data-add");
-          addToCart(id);
-        });
-      });
-    }
-
     function renderPopular(){
       popularListEl.innerHTML = POPULAR_FIXED.map(p => productRowHtml(p, true)).join("");
-      bindRowEvents(popularListEl);
     }
 
     function renderProducts(){
       const kw = (searchInput.value || "").trim().toLowerCase();
 
       // popularは別枠なので除外
-      const list = PRODUCTS.filter(p => !POPULAR_FIXED.some(x=>x.id===p.id))
+      const list = PRODUCTS
+        .filter(p => !POPULAR_FIXED.some(x=>x.id===p.id))
         .filter(p => !kw || p.name.toLowerCase().includes(kw));
 
       productListEl.innerHTML = list.map(p => productRowHtml(p, false)).join("");
-      bindRowEvents(productListEl);
-    }
 
-    searchInput.addEventListener("input", ()=> renderProducts());
+      // ロック時の入力無効（念のため）
+      searchInput.disabled = isLocked();
+    }
 
     function syncCartFromStorage(){
       cart = loadCart();
