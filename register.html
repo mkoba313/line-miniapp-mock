@@ -11,13 +11,13 @@
       --muted:#6b7280;
       --border:#e5e7eb;
       --primary:#111827;
+      --disabled:#9ca3af;
       --card:#ffffff;
       --shadow:0 6px 18px rgba(0,0,0,.06);
       --radius:16px;
       --font: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", Roboto, Arial, sans-serif;
     }
     * , *::before, *::after{ box-sizing:border-box; }
-
     body{
       margin:0;
       background:var(--bg);
@@ -54,6 +54,9 @@
       font-size:18px;
       text-align:center;
       flex:1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     main{
       max-width:780px;
@@ -79,8 +82,7 @@
       margin:12px 0 6px 0;
       font-size:16px;
     }
-
-    input[type="text"], input[type="tel"]{
+    input[type="text"], input[type="tel"], input[type="email"]{
       display:block;
       width:100%;
       max-width:100%;
@@ -92,66 +94,13 @@
       -webkit-appearance:none;
       appearance:none;
     }
-    input[type="text"]:focus, input[type="tel"]:focus{
+    input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus{
       border-color:#9ca3af;
     }
-
     .note{
       color:var(--muted);
       font-size:14px;
       margin-top:6px;
-    }
-
-    /* ===== 立場選択（必須） ===== */
-    .choice-wrap{
-      margin-top:10px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px;
-      background:#fff;
-    }
-    .choice-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-      margin-top:10px;
-    }
-    .choice{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:14px 12px;
-      cursor:pointer;
-      user-select:none;
-      background:#fff;
-    }
-    .choice input{
-      width:24px;
-      height:24px;
-      margin:0;
-      accent-color:#111827;
-      flex:0 0 auto;
-    }
-    .choice .c-main{
-      font-size:17px;
-      font-weight:900;
-      line-height:1.2;
-    }
-    .choice .c-sub{
-      font-size:13px;
-      color:var(--muted);
-      font-weight:800;
-      margin-top:4px;
-      line-height:1.5;
-    }
-    .warn{
-      margin-top:8px;
-      color:#b45309;
-      font-size:13px;
-      font-weight:900;
-      display:none;
     }
 
     details{
@@ -182,9 +131,6 @@
       border-radius:999px;
       font-weight:800;
       flex:0 0 auto;
-    }
-    .badge-gray{
-      background:#374151;
     }
 
     .scrollbox{
@@ -246,6 +192,18 @@
       background:#d1d5db;
       color:#6b7280;
     }
+    .link-row{
+      display:flex;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    a{
+      color:#111827;
+      font-weight:800;
+      text-decoration:underline;
+    }
   </style>
 </head>
 
@@ -271,33 +229,9 @@
     <label for="address">住所（必須）</label>
     <input id="address" name="address" type="text" placeholder="例：東京都〇〇区…" autocomplete="street-address" required />
 
-    <!-- ✅ 追加：申込者の立場（必須） -->
-    <div class="choice-wrap" aria-label="申込者の立場（必須）">
-      <label style="margin:0;">申込者の立場（必須）</label>
-      <div class="note" style="margin:6px 0 0;">
-        ※「喪主」または「同行者」を必ず選択してください（未選択のまま登録はできません）
-      </div>
-
-      <div class="choice-grid">
-        <label class="choice" for="roleChief">
-          <input id="roleChief" type="radio" name="applicantRole" value="chief" />
-          <div>
-            <div class="c-main">喪主</div>
-            <div class="c-sub">代表として手続きを行う方</div>
-          </div>
-        </label>
-
-        <label class="choice" for="roleCompanion">
-          <input id="roleCompanion" type="radio" name="applicantRole" value="companion" />
-          <div>
-            <div class="c-main">同行者</div>
-            <div class="c-sub">喪主に同行している方</div>
-          </div>
-        </label>
-      </div>
-
-      <div class="warn" id="roleWarn">※申込者の立場を選択してください。</div>
-    </div>
+    <!-- ✅ 追加：メールアドレス（任意） -->
+    <label for="email">メールアドレス（任意）</label>
+    <input id="email" name="email" type="email" placeholder="例：example@example.com" autocomplete="email" />
 
     <p class="note">※入力項目は今後増える可能性があります。</p>
   </form>
@@ -341,7 +275,7 @@
 
         <p><strong>3. 個人情報の取扱い（火葬の規約に含む）</strong></p>
         <ul>
-          <li>取得する情報：氏名、電話番号、住所、その他申込みに必要な情報</li>
+          <li>取得する情報：氏名、電話番号、住所、メールアドレス（任意）、その他申込みに必要な情報</li>
           <li>利用目的：申込み受付、本人確認、連絡、運営上必要な案内、問合せ対応 等</li>
           <li>第三者提供：法令に基づく場合等を除き、本人同意なく提供しません。</li>
           <li>安全管理：不正アクセス等の防止に努めます。</li>
@@ -360,7 +294,7 @@
       <div class="agree-row">
         <input id="cremationAgree" type="checkbox" disabled />
         <div>
-          <div class="checkbox-label">「火葬の規約（必須）」に同意します</div>
+          <div class="checkbox-label">「火葬の規約」に同意します</div>
           <div class="checkbox-sub">※個人情報の取扱いも本規約に含まれます。</div>
         </div>
       </div>
@@ -421,7 +355,7 @@
 
   <div class="card cta">
     <button id="submitBtn" type="button" disabled>登録</button>
-    <p class="note" style="margin:0;">※「登録」は、立場選択と2つの規約への同意がそろった時点で押せます。</p>
+    <p class="note" style="margin:0;">※「登録」は、2つの規約への同意がそろった時点で押せます。</p>
   </div>
 </main>
 
@@ -439,10 +373,6 @@
 
   const submitBtn = document.getElementById('submitBtn');
 
-  // ✅ 立場必須
-  const roleRadios = Array.from(document.querySelectorAll('input[name="applicantRole"]'));
-  const roleWarn = document.getElementById('roleWarn');
-
   // state
   let cremationUnlockedByScroll = false;
   let miniappUnlockedByScroll = false;
@@ -451,16 +381,9 @@
     return el.scrollTop + el.clientHeight >= el.scrollHeight - 5;
   }
 
-  function isRoleSelected(){
-    return roleRadios.some(r => r.checked);
-  }
-
   function updateButtonState() {
-    const agreed = cremationAgree.checked && miniappAgree.checked;
-    const roleOk = isRoleSelected();
-
-    roleWarn.style.display = roleOk ? "none" : "block";
-    submitBtn.disabled = !(agreed && roleOk);
+    const ok = cremationAgree.checked && miniappAgree.checked;
+    submitBtn.disabled = !ok;
   }
 
   function syncMasterFromIndividuals() {
@@ -497,7 +420,7 @@
     updateButtonState();
   }
 
-  // scroll unlock
+  // scroll unlock: cremation
   cremationScroll.addEventListener('scroll', () => {
     if (cremationUnlockedByScroll) return;
     if (!allAgree.checked && nearBottom(cremationScroll)) {
@@ -507,6 +430,7 @@
     }
   });
 
+  // scroll unlock: miniapp
   miniappScroll.addEventListener('scroll', () => {
     if (miniappUnlockedByScroll) return;
     if (!allAgree.checked && nearBottom(miniappScroll)) {
@@ -521,7 +445,7 @@
     applyMasterAgree(allAgree.checked);
   });
 
-  // individuals
+  // individual agrees
   cremationAgree.addEventListener('change', () => {
     if (allAgree.checked && !cremationAgree.checked) {
       allAgree.checked = false;
@@ -542,21 +466,12 @@
     updateButtonState();
   });
 
-  // ✅ 立場選択の変更でボタン更新
-  roleRadios.forEach(r => r.addEventListener('change', updateButtonState));
-
-  // submit (mock)
+  // submit (mock) -> ホームへ
   submitBtn.addEventListener('click', () => {
+    // 本来はAPI送信→成功後に登録済み保存
     localStorage.setItem("miniapp_registered", "1");
-
-    const selected = roleRadios.find(r => r.checked)?.value || "";
-    localStorage.setItem("miniapp_applicant_role", selected); // chief / companion
-
     window.location.replace("./index.html");
   });
-
-  // 初期：未選択のため登録は押せない
-  updateButtonState();
 </script>
 </body>
 </html>
