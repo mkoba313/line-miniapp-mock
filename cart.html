@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>カート</title>
+  <title>オーダー（カート）</title>
 
   <style>
     :root{
@@ -73,7 +73,7 @@
       gap:8px;
     }
 
-    /* Back big button (分かりやすく) */
+    /* Back big button */
     .backBtn{
       height:44px;
       padding:0 12px;
@@ -120,7 +120,7 @@
       border:2px solid #fff;
     }
 
-    /* Role switch（カートは共有だが表示上残す） */
+    /* Role switch */
     .role-switch{ display:flex; gap:4px; }
     .role-switch button{
       border:1px solid var(--line);
@@ -281,11 +281,9 @@
       cursor:pointer;
       box-shadow: var(--shadow);
     }
-    .btn.secondary{
-      background:#fff;
-      color: var(--text);
-      border:1px solid var(--line);
-      box-shadow:none;
+    .btn.primary{
+      background: var(--ok);
+      color:#fff;
     }
     .btn.danger{
       background:#fff;
@@ -293,7 +291,7 @@
       border:1px solid #fecaca;
       box-shadow:none;
     }
-    .btn.primary{
+    .btn.blue{
       background: var(--blue);
       color:#fff;
     }
@@ -316,7 +314,6 @@
 <body>
   <header class="header">
     <div class="header-left">
-      <!-- ★戻るを分かりやすく：矢印＋「オーダーに戻る」 -->
       <button class="backBtn" id="backBtn" type="button" aria-label="オーダーに戻る">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M15 6 9 12l6 6" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -360,11 +357,14 @@
       </div>
 
       <div class="actions">
+        <!-- ★追加：注文する（カート空なら非活性） -->
+        <button class="btn primary" id="orderBtn" type="button">注文する</button>
+
         <!-- 全削除 -->
         <button class="btn danger" id="clearAllBtn" type="button">カートをすべて削除</button>
 
-        <!-- 高齢者向け：大きい履歴ボタン（カート内容の下） -->
-        <button class="btn primary historyBtn" id="historyBtn" type="button">購入履歴を見る</button>
+        <!-- 履歴 -->
+        <button class="btn blue historyBtn" id="historyBtn" type="button">購入履歴を見る</button>
       </div>
     </section>
   </div>
@@ -382,10 +382,13 @@
       { id:"s_choco", name:"チョコレート", price:220 },
     ];
 
-    const LS_CART = "miniapp_cart";   // ★喪主/同行者で共有（1つだけ）
-    const LS_ROLE = "miniapp_role";   // 表示切替（カートは共有だがUIの統一用）
+    const LS_CART = "miniapp_cart";           // ★喪主/同行者で共有
+    const LS_ROLE = "miniapp_role";           // 表示切替（UI統一用）
+    const LS_HISTORY = "miniapp_order_history"; // ★購入履歴保存先
+    const LS_APPLICANT_NAME = "miniapp_applicant_name"; // 申込者名（モック）
 
     if(!localStorage.getItem(LS_ROLE)) localStorage.setItem(LS_ROLE, "host");
+    if(!localStorage.getItem(LS_APPLICANT_NAME)) localStorage.setItem(LS_APPLICANT_NAME, "山田 太郎");
 
     // ===== Elements =====
     const backBtn = document.getElementById("backBtn");
@@ -399,6 +402,7 @@
     const countPill = document.getElementById("countPill");
     const totalEl = document.getElementById("total");
 
+    const orderBtn = document.getElementById("orderBtn");
     const clearAllBtn = document.getElementById("clearAllBtn");
     const historyBtn = document.getElementById("historyBtn");
 
@@ -427,6 +431,35 @@
       localStorage.setItem(LS_CART, JSON.stringify(cart));
     }
 
+    // ★バッジが消えない対策：マスタに無いIDは自動で削除
+    function normalizeCart(cart){
+      const out = {};
+      let changed = false;
+
+      for (const [id, qtyRaw] of Object.entries(cart || {})) {
+        const q = Number(qtyRaw || 0);
+        const exists = PRODUCTS.some(p => p.id === id);
+        if (!exists || !Number.isFinite(q) || q <= 0) { changed = true; continue; }
+        out[id] = q;
+      }
+      if (JSON.stringify(out) !== JSON.stringify(cart)) changed = true;
+      return { cart: out, changed };
+    }
+
+    function loadHistory(){
+      try{
+        const raw = localStorage.getItem(LS_HISTORY);
+        if(!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      }catch{
+        return [];
+      }
+    }
+    function saveHistory(arr){
+      localStorage.setItem(LS_HISTORY, JSON.stringify(arr));
+    }
+
     function cartCount(cart){
       return Object.values(cart).reduce((a,b)=>a+Number(b||0),0);
     }
@@ -442,6 +475,17 @@
     function getRole(){ return localStorage.getItem(LS_ROLE) || "host"; }
     function setRole(role){ localStorage.setItem(LS_ROLE, role); render(); }
 
+    function formatDate(d){
+      const pad = (n)=> String(n).padStart(2,"0");
+      return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    function makeOrderId(){
+      const d = new Date();
+      const pad = (n)=> String(n).padStart(2,"0");
+      const ymd = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+      return `H-${ymd}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+    }
+
     // ===== Navigation =====
     backBtn.addEventListener("click", ()=> location.href = "./order.html");
     cartBtn.addEventListener("click", ()=> location.href = "./cart.html");
@@ -452,12 +496,53 @@
 
     // ===== 全削除 =====
     clearAllBtn.addEventListener("click", ()=>{
-      const empty = {};
-      saveCart(empty);
+      saveCart({});
       render();
     });
 
-    // ===== イベント委譲（数量＋/−/削除の取りこぼし防止） =====
+    // ===== 注文する（履歴に保存してカート空にして履歴へ） =====
+    orderBtn.addEventListener("click", ()=>{
+      const loaded = loadCart();
+      const normalized = normalizeCart(loaded);
+      const cart = normalized.cart;
+      if(normalized.changed) saveCart(cart);
+
+      const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
+      if(entries.length === 0) return;
+
+      const applicant = localStorage.getItem(LS_APPLICANT_NAME) || "—";
+      const role = getRole();
+      const roleLabel = role === "host" ? "喪主" : "同行者";
+
+      const items = entries
+        .map(([id, qty])=>{
+          const p = PRODUCTS.find(x=>x.id===id);
+          if(!p) return null;
+          return `${p.name} × ${Number(qty||0)}`;
+        })
+        .filter(Boolean);
+
+      const total = cartTotal(cart);
+
+      const history = loadHistory();
+      history.unshift({
+        id: makeOrderId(),
+        date: formatDate(new Date()),
+        total,
+        items,
+        orderedBy: applicant,       // ★注文者（申込者）
+        operatorRole: roleLabel     // 任意：操作したのが喪主/同行者
+      });
+      saveHistory(history);
+
+      // カートを空に
+      saveCart({});
+
+      // 履歴へ
+      location.href = "./history.html";
+    });
+
+    // ===== イベント委譲（数量＋/−/削除） =====
     document.addEventListener("click", (e)=>{
       const t = e.target;
       if(!(t instanceof Element)) return;
@@ -468,18 +553,25 @@
       if(act){
         const id = t.getAttribute("data-id");
         if(!id) return;
-        const cart = loadCart();
+        const loaded = loadCart();
+        const normalized = normalizeCart(loaded);
+        const cart = normalized.cart;
+
         const cur = Number(cart[id] || 0);
         const next = act === "plus" ? cur + 1 : Math.max(0, cur - 1);
         if(next <= 0) delete cart[id];
         else cart[id] = next;
+
         saveCart(cart);
         render();
         return;
       }
 
       if(del){
-        const cart = loadCart();
+        const loaded = loadCart();
+        const normalized = normalizeCart(loaded);
+        const cart = normalized.cart;
+
         delete cart[del];
         saveCart(cart);
         render();
@@ -504,7 +596,11 @@
     }
 
     function render(){
-      const cart = loadCart();
+      const loaded = loadCart();
+      const normalized = normalizeCart(loaded);
+      const cart = normalized.cart;
+      if(normalized.changed) saveCart(cart);
+
       renderHeader(cart);
 
       const entries = Object.entries(cart).filter(([_,q]) => Number(q||0) > 0);
@@ -513,42 +609,45 @@
       countPill.textContent = `${count}点`;
       totalEl.textContent = yen(cartTotal(cart));
 
+      // ボタン制御
+      const has = entries.length > 0;
+      orderBtn.disabled = !has;
+      clearAllBtn.disabled = !has;
+
       // 空表示
-      if(entries.length === 0){
+      if(!has){
         cartList.innerHTML = `<div class="empty">カートは、空になります</div>`;
-        clearAllBtn.disabled = true;
-      }else{
-        clearAllBtn.disabled = false;
-
-        cartList.innerHTML = entries.map(([id, qty])=>{
-          const p = PRODUCTS.find(x=>x.id===id);
-          if(!p) return "";
-          const q = Number(qty||0);
-          const sub = p.price * q;
-
-          return `
-            <div class="row">
-              <div class="info">
-                <div class="name">${escapeHtml(p.name)}</div>
-                <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
-              </div>
-
-              <div class="right">
-                <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
-                  <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
-                  <div class="n">${q}</div>
-                  <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
-                </div>
-
-                <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
-              </div>
-            </div>
-          `;
-        }).join("");
+        return;
       }
+
+      cartList.innerHTML = entries.map(([id, qty])=>{
+        const p = PRODUCTS.find(x=>x.id===id);
+        if(!p) return "";
+        const q = Number(qty||0);
+        const sub = p.price * q;
+
+        return `
+          <div class="row">
+            <div class="info">
+              <div class="name">${escapeHtml(p.name)}</div>
+              <div class="sub">${yen(p.price)} × ${q} = ${yen(sub)}</div>
+            </div>
+
+            <div class="right">
+              <div class="qty" aria-label="${escapeHtml(p.name)} 数量">
+                <button type="button" data-act="minus" data-id="${id}" aria-label="減らす">−</button>
+                <div class="n">${q}</div>
+                <button type="button" data-act="plus" data-id="${id}" aria-label="増やす">＋</button>
+              </div>
+
+              <button class="del" type="button" data-del="${id}" aria-label="削除">🗑</button>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
-    // 戻ってきた時（履歴戻り/キャッシュ復帰）にも必ず最新反映
+    // 戻ってきた時にも最新反映
     window.addEventListener("pageshow", () => render());
     document.addEventListener("visibilitychange", () => { if(!document.hidden) render(); });
 
