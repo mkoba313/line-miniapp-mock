@@ -204,42 +204,58 @@
       font-weight:800;
       text-decoration:underline;
     }
-    /* ✅ 役割選択 */
+    /* ✅ 役割選択：基本は横並び、狭い画面は縦並び */
     .role-grid{
       display:grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr; /* 横並び */
       gap:10px;
       margin-top:8px;
     }
+    
+    @media (max-width: 520px){
+      .role-grid{
+        grid-template-columns: 1fr; /* 狭い時は縦 */
+      }
+    }
+    
     .role-card{
-      display:grid;
-      grid-template-columns: 24px 1fr;
-      column-gap:10px;
-      row-gap:2px;
-      align-items:start;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
       padding:14px 12px;
       border:1px solid var(--border);
       border-radius:14px;
       background:#fff;
       cursor:pointer;
     }
+    
     .role-card input[type="radio"]{
       width:22px;
       height:22px;
       margin-top:2px;
       accent-color:#111827;
+      flex:0 0 auto;
     }
+    
+    .role-text{
+      min-width:0;
+    }
+    
     .role-title{
       font-weight:900;
       font-size:16px;
+      line-height:1.2;
     }
+    
     .role-sub{
-      grid-column:2;
+      margin-top:4px;
       font-size:13px;
       color:var(--muted);
       font-weight:700;
-      line-height:1.5;
+      line-height:1.45;
     }
+    
+    /* 選択時の強調（:has 非対応でもOK。対応端末だけ効く） */
     .role-card:has(input:checked){
       border-color:#9ca3af;
       box-shadow:0 0 0 3px rgba(17,24,39,.06);
@@ -259,18 +275,22 @@
 <main>
   <form id="registerForm" class="card" onsubmit="return false;">
     <h2 class="section-title">会員登録（火葬申込み）</h2>
-    <!-- ✅ 追加：役割（必須） -->
+<!-- ✅ 役割選択（必須 / デフォルト未選択 / 横並び） -->
     <label>利用区分（必須）</label>
     <div class="role-grid" role="radiogroup" aria-label="利用区分">
-      <label class="role-card">
+      <label class="role-card" for="roleChief">
         <input type="radio" name="role" value="chief" id="roleChief" required>
-        <div class="role-title">喪主</div>
-        <div class="role-sub">火葬申込み・代表者として手続きを進めます</div>
+        <div class="role-text">
+          <div class="role-title">喪主</div>
+          <div class="role-sub">火葬申込み・代表者として手続きを進めます</div>
+        </div>
       </label>
     
-      <label class="role-card">
+      <label class="role-card" for="roleCompanion">
         <input type="radio" name="role" value="companion" id="roleCompanion" required>
-        <div class="role-title">同行者</div>
+        <div class="role-text">
+          <div class="role-title">同行者</div>
+        </div>
       </label>
     </div>
 
