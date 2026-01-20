@@ -132,8 +132,8 @@
 
     .btn-primary{
       border-color:rgba(37,99,235,.35);
-      color:var(--accent);
-      background:#fff;
+      color:#fff;
+      background:var(--accent);
     }
 
     .note{
@@ -175,36 +175,30 @@
         <a class="tel" href="tel:0312345678">03-1234-5678</a>
       </div>
 
-      <!-- ▼ お問い合わせ（コールセンター） -->
+      <!-- ▼ お問い合わせ（フォーム導線：電話/メールは出さない） -->
       <div class="divider"></div>
 
       <div class="row">
-        <div class="section-title">お問い合わせ（コールセンター）</div>
+        <div class="section-title">お問い合わせ</div>
 
         <div class="help-box">
-          <div class="row" style="gap:4px;">
-            <div class="label">予約内容の確認・変更、当日のご連絡</div>
-
-            <!-- TODO: コールセンター番号に差し替え -->
-            <a class="tel" href="tel:0120123456">0120-123-456</a>
-
-            <!-- TODO: 受付時間に差し替え -->
-            <div class="note">受付時間：9:00〜18:00（年末年始を除く）</div>
+          <div class="row" style="gap:6px;">
+            <div class="label">予約内容の確認・変更／各種ご相談</div>
+            <div class="note">
+              お問い合わせはフォームからお願いします（本人確認のため入力項目があります）。
+            </div>
           </div>
 
           <div class="help-actions">
-            <a class="btn btn-primary" href="tel:0120123456">コールセンターに電話する</a>
-            <!-- メール運用する場合のみ：不要なら行ごと削除OK -->
-            <a class="btn" href="mailto:callcenter@example.com?subject=予約に関するお問い合わせ">メールする</a>
+            <a class="btn btn-primary" href="./inquiry.html">問い合わせフォームを開く</a>
           </div>
 
           <div class="note">
-            ※緊急の場合はお電話をご利用ください。<br />
-            ※受付時間外は、翌営業時間内にご連絡いたします。
+            目安返信：1〜2営業日以内
           </div>
         </div>
       </div>
-      <!-- ▲ お問い合わせ（コールセンター） -->
+      <!-- ▲ お問い合わせ（フォーム導線） -->
 
     </div>
   </div>
