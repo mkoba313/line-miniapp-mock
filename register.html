@@ -204,6 +204,46 @@
       font-weight:800;
       text-decoration:underline;
     }
+    /* ✅ 役割選択 */
+    .role-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      margin-top:8px;
+    }
+    .role-card{
+      display:grid;
+      grid-template-columns: 24px 1fr;
+      column-gap:10px;
+      row-gap:2px;
+      align-items:start;
+      padding:14px 12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+      cursor:pointer;
+    }
+    .role-card input[type="radio"]{
+      width:22px;
+      height:22px;
+      margin-top:2px;
+      accent-color:#111827;
+    }
+    .role-title{
+      font-weight:900;
+      font-size:16px;
+    }
+    .role-sub{
+      grid-column:2;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      line-height:1.5;
+    }
+    .role-card:has(input:checked){
+      border-color:#9ca3af;
+      box-shadow:0 0 0 3px rgba(17,24,39,.06);
+    }
   </style>
 </head>
 
@@ -219,6 +259,20 @@
 <main>
   <form id="registerForm" class="card" onsubmit="return false;">
     <h2 class="section-title">会員登録（火葬申込み）</h2>
+    <!-- ✅ 追加：役割（必須） -->
+    <label>利用区分（必須）</label>
+    <div class="role-grid" role="radiogroup" aria-label="利用区分">
+      <label class="role-card">
+        <input type="radio" name="role" value="chief" id="roleChief" required>
+        <div class="role-title">喪主</div>
+        <div class="role-sub">火葬申込み・代表者として手続きを進めます</div>
+      </label>
+    
+      <label class="role-card">
+        <input type="radio" name="role" value="companion" id="roleCompanion" required>
+        <div class="role-title">同行者</div>
+      </label>
+    </div>
 
     <label for="name">申込者氏名（必須）</label>
     <input id="name" name="name" type="text" placeholder="例：山田 太郎" autocomplete="name" required />
@@ -468,9 +522,18 @@
 
   // submit (mock) -> ホームへ
   submitBtn.addEventListener('click', () => {
-    // 本来はAPI送信→成功後に登録済み保存
-    localStorage.setItem("miniapp_registered", "1");
-    window.location.replace("./index.html");
+ const role = document.querySelector('input[name="role"]:checked')?.value;
+
+  if(!role){
+    alert("利用区分（喪主／同行者）を選択してください。");
+    return;
+  }
+
+  // 本来はAPI送信→成功後に登録済み保存
+  localStorage.setItem("miniapp_registered", "1");
+  localStorage.setItem("miniapp_user_role", role); // chief / companion
+
+  window.location.replace("./index.html");
   });
 </script>
 </body>
