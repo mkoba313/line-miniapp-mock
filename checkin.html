@@ -19,6 +19,7 @@
       --ok:#16a34a;
       --warn:#b45309;
       --soft:#f9fafb;
+      --accent:#0ea5e9;
     }
     * , *::before, *::after { box-sizing: border-box; }
 
@@ -171,59 +172,91 @@
       line-height:1.6;
     }
 
-    /* ===== アプリおすすめカード ===== */
-    .appCard{
+    /* ===== ✅ 全画面：アプリ誘導（チェックイン直後） ===== */
+    .gate{
+      position:fixed;
+      inset:0;
+      background:#fff;
+      z-index:9999;
       display:none;
+      padding:18px 18px calc(18px + env(safe-area-inset-bottom));
+    }
+    .gateInner{
+      max-width:520px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      min-height:100%;
+    }
+    .gateTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-top: env(safe-area-inset-top);
+    }
+    .gateBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:1000;
+      background:var(--soft);
+      font-size:13px;
+      color:var(--text);
+    }
+    .gateCard{
       border:1px solid var(--line);
       border-radius:var(--radius);
-      padding:16px;
-      background:#fff;
       box-shadow: var(--shadow);
+      padding:18px;
+      background:#fff;
     }
-    .appTop{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
+    .gateHero{
+      border-radius:18px;
+      padding:16px;
+      background: linear-gradient(180deg, #ecfeff 0%, #ffffff 65%);
+      border:1px solid #cffafe;
     }
-    .appIcon{
-      width:44px; height:44px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
-      display:grid;
-      place-items:center;
-      font-weight:1000;
-      flex:0 0 auto;
-    }
-    .appTitle{
-      font-size:18px;
-      font-weight:1000;
+    .gateTitle{
       margin:0;
+      font-size:22px;
+      font-weight:1000;
+      line-height:1.25;
+      letter-spacing:.01em;
     }
-    .appDesc{
-      margin:6px 0 0;
+    .gateEm{
+      display:inline-block;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#0ea5e91a;
+      border:1px solid #0ea5e933;
+      font-weight:1000;
+      font-size:16px;
+    }
+    .gateDesc{
+      margin:10px 0 0;
       color:var(--muted);
-      font-weight:800;
-      font-size:14px;
+      font-weight:900;
       line-height:1.7;
+      font-size:14px;
     }
-    .appPoints{
+    .gatePoints{
       margin:12px 0 0;
       padding-left:18px;
-      color:var(--text);
       font-weight:900;
     }
-    .appPoints li{
-      margin:6px 0;
-      font-size:14px;
-      font-weight:900;
-    }
-    .appActions{
+    .gatePoints li{ margin:7px 0; font-size:14px; }
+    .gateActions{
       display:grid;
       gap:10px;
       margin-top:12px;
     }
-    .smallLink{
+    .gateSmall{
       background:transparent;
       border:0;
       color:var(--muted);
@@ -233,6 +266,18 @@
       cursor:pointer;
       padding:6px 8px;
       justify-self:center;
+    }
+    .gateFoot{
+      margin-top:auto;
+      color:var(--muted);
+      font-weight:800;
+      font-size:12px;
+      line-height:1.6;
+      text-align:center;
+    }
+    .countdown{
+      font-weight:1000;
+      color:var(--text);
     }
   </style>
 </head>
@@ -277,86 +322,97 @@
       </div>
     </section>
 
-    <!-- ✅ チェックイン後に表示：アプリおすすめ -->
-    <section class="appCard" id="appCard" aria-label="アプリのご案内">
-      <div class="appTop">
-        <div class="appIcon" aria-hidden="true">ア</div>
-        <div>
-          <h3 class="appTitle">アプリを入れると、当日がもっとスムーズです</h3>
-          <p class="appDesc">
-            チェックインが完了しました。<br/>
-            迷わず使えるように、アプリのご利用をおすすめします（無料）。
-          </p>
+  </div>
+
+  <!-- ✅ チェックイン直後：全画面でアプリ訴求 → ストアへ遷移 -->
+  <section class="gate" id="installGate" aria-label="アプリインストールのご案内">
+    <div class="gateInner">
+      <div class="gateTop">
+        <div class="gateBadge">✅ チェックイン完了</div>
+        <div class="gateBadge">自動でストアへ移動：<span class="countdown" id="cd">2</span>秒</div>
+      </div>
+
+      <div class="gateHero">
+        <h2 class="gateTitle">アプリを入れると、<br/>オーダーができます</h2>
+        <div class="gateEm">📣 オーダー機能はアプリから利用できます</div>
+        <p class="gateDesc">
+          チェックインありがとうございます。<br/>
+          当日のオーダー（売店／休憩室など）をスムーズにするため、アプリのインストールをおすすめします（無料）。
+        </p>
+      </div>
+
+      <div class="gateCard">
+        <ul class="gatePoints">
+          <li>オーダーがすぐできて迷いにくい</li>
+          <li>通知で受け取りタイミングを見逃しにくい</li>
+          <li>動作が安定して使いやすい</li>
+        </ul>
+
+        <div class="gateActions">
+          <button class="btn blue" id="goStoreBtn" type="button">ストアへ進む</button>
+          <button class="gateSmall" id="skipBtn" type="button">今はしない（LINEミニアプリで続ける）</button>
+        </div>
+
+        <div class="hint" style="margin-top:10px;">
+          ※自動遷移しない場合は「ストアへ進む」を押してください。
         </div>
       </div>
 
-      <ul class="appPoints">
-        <li>無料Wi-Fiに接続しやすい</li>
-        <li>モバイルオーダーが使える（対応している場合）</li>
-        <li>案内やお知らせを見逃しにくい</li>
-      </ul>
-
-      <div class="appActions">
-        <button class="btn blue" id="installBtn" type="button">アプリを開く／入手する</button>
-        <button class="smallLink" id="continueBtn" type="button">このままLINEミニアプリで続ける</button>
+      <div class="gateFoot">
+        ※モックのため、URLは後で差し替えが必要です。<br/>
+        ※ブラウザ/端末により、遷移がブロックされる場合があります。
       </div>
-
-      <div class="hint" style="margin-top:10px;">
-        ※アプリは端末のストア画面へ移動します（モックではアラート表示）。
-      </div>
-    </section>
-
-  </div>
+    </div>
+  </section>
 
   <script>
+    // ===== 設定：ストアURL（★ここだけ差し替え） =====
+    const STORE_URL_IOS = "https://apps.apple.com/app/idXXXXXXXXXX"; // TODO: iOSの実URL
+    const STORE_URL_ANDROID = "https://play.google.com/store/apps/details?id=xxxx.xxxx"; // TODO: Androidの実URL
+
     // ===== デモ状態保存 =====
     const LS_KEY = "miniapp_checkin_done_soft";
-    const LS_APP_CARD_KEY = "miniapp_hide_appcard"; // 案内を閉じたか（任意）
 
     const statusPill = document.getElementById("statusPill");
     const statusText = document.getElementById("statusText");
     const statusSub  = document.getElementById("statusSub");
     const checkinBtn = document.getElementById("checkinBtn");
     const resetBtn   = document.getElementById("resetBtn");
-
     const checkedAt  = document.getElementById("checkedAt");
 
-    const appCard    = document.getElementById("appCard");
-    const installBtn = document.getElementById("installBtn");
-    const continueBtn= document.getElementById("continueBtn");
+    // 全画面誘導
+    const installGate = document.getElementById("installGate");
+    const cdEl = document.getElementById("cd");
+    const goStoreBtn = document.getElementById("goStoreBtn");
+    const skipBtn = document.getElementById("skipBtn");
+
+    let redirectTimer = null;
+    let countdownTimer = null;
+    let locked = false;
 
     function pad(n){ return String(n).padStart(2,"0"); }
-
     function nowText(){
       const now = new Date();
       return `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
     }
 
-    function showAppCard(){
-      const hide = localStorage.getItem(LS_APP_CARD_KEY) === "1";
-      appCard.style.display = hide ? "none" : "block";
+    function saveCheckedIn(ts){
+      localStorage.setItem(LS_KEY, JSON.stringify({ checkedAt: ts }));
     }
-    function hideAppCard(){
-      appCard.style.display = "none";
-      localStorage.setItem(LS_APP_CARD_KEY, "1");
-    }
-    function resetAppCard(){
-      localStorage.removeItem(LS_APP_CARD_KEY);
+    function clearCheckedIn(){
+      localStorage.removeItem(LS_KEY);
     }
 
     function setCheckedInUI(ts){
       statusPill.classList.remove("pill-warn");
       statusPill.classList.add("pill-ok");
       statusText.textContent = "チェックイン済み";
-      statusSub.textContent  = "このままお進みください。必要に応じてアプリのご案内を表示します。";
+      statusSub.textContent  = "このままお進みください。";
 
       checkedAt.textContent = ts;
 
       checkinBtn.style.display = "none";
       resetBtn.style.display   = "block";
-
-      // ✅ チェックイン後：おすすめ表示（強制ではない）
-      showAppCard();
     }
 
     function setNotCheckedInUI(){
@@ -369,15 +425,54 @@
 
       checkinBtn.style.display = "block";
       resetBtn.style.display   = "none";
-
-      appCard.style.display = "none";
     }
 
-    function saveCheckedIn(ts){
-      localStorage.setItem(LS_KEY, JSON.stringify({ checkedAt: ts }));
+    function getStoreUrl(){
+      const ua = navigator.userAgent || "";
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+      const isAndroid = /Android/i.test(ua);
+
+      if (isIOS) return STORE_URL_IOS;
+      if (isAndroid) return STORE_URL_ANDROID;
+
+      // PC等
+      return "";
     }
-    function clearCheckedIn(){
-      localStorage.removeItem(LS_KEY);
+
+    function openStore(){
+      const url = getStoreUrl();
+      if(!url){
+        alert("PC/非対応端末のためストアURLを判定できません（モック）。");
+        return;
+      }
+      // WebView想定：locationで遷移
+      window.location.href = url;
+    }
+
+    function showInstallGateAndRedirect(){
+      installGate.style.display = "block";
+
+      // 「見せたい」ので、ほんの一瞬だけ表示してから自動遷移
+      let cd = 2; // 見せる秒数（必要なら 1 にしてさらに“直後感”を強めてもOK）
+      cdEl.textContent = String(cd);
+
+      countdownTimer = setInterval(()=>{
+        cd -= 1;
+        cdEl.textContent = String(Math.max(cd, 0));
+        if(cd <= 0){
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+      }, 1000);
+
+      redirectTimer = setTimeout(()=>{
+        openStore();
+      }, 900); // 0.9秒後に遷移（体感“直後”＋メッセージも目に入る）
+    }
+
+    function cancelAutoRedirect(){
+      if(redirectTimer){ clearTimeout(redirectTimer); redirectTimer = null; }
+      if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
     }
 
     // 初期表示
@@ -396,32 +491,42 @@
       }
     })();
 
-    // チェックイン
+    // ✅ チェックイン（押下直後：全画面訴求 → ストアへ）
     checkinBtn.addEventListener("click", ()=>{
+      if(locked) return;
+      locked = true;
+
       const ts = nowText();
       saveCheckedIn(ts);
       setCheckedInUI(ts);
-      alert("チェックインが完了しました。");
+
+      // アラートは出さない（ストア遷移を邪魔するので）
+      showInstallGateAndRedirect();
+
+      // 二重タップ対策：少し後に解除
+      setTimeout(()=>{ locked = false; }, 1500);
     });
 
     // モック：未チェックインに戻す
     resetBtn.addEventListener("click", ()=>{
+      cancelAutoRedirect();
+      installGate.style.display = "none";
       clearCheckedIn();
-      resetAppCard(); // 案内カードの閉じた状態もリセット
       setNotCheckedInUI();
       alert("未チェックインに戻しました（モック）。");
     });
 
-    // アプリ導線（モック）
-    installBtn.addEventListener("click", ()=>{
-      // 実装時：OS判定してストアURL or ディープリンクへ
-      alert("（モック）ストア／アプリ起動へ遷移します。");
+    // ストアへ進む（手動）
+    goStoreBtn.addEventListener("click", ()=>{
+      cancelAutoRedirect();
+      openStore();
     });
 
-    // このまま続ける（閉じる）
-    continueBtn.addEventListener("click", ()=>{
-      hideAppCard();
-      alert("このままLINEミニアプリで続けられます。");
+    // 今はしない（自動遷移をキャンセルして閉じる）
+    skipBtn.addEventListener("click", ()=>{
+      cancelAutoRedirect();
+      installGate.style.display = "none";
+      // このままミニアプリで続行
     });
   </script>
 </body>
