@@ -367,8 +367,11 @@
 
   <script>
     // ===== 設定：ストアURL（★ここだけ差し替え） =====
-    const STORE_URL_IOS = "https://apps.apple.com/app/idXXXXXXXXXX"; // TODO: iOSの実URL
-    const STORE_URL_ANDROID = "https://play.google.com/store/apps/details?id=xxxx.xxxx"; // TODO: Androidの実URL
+    // ✅ LINEアプリのストアURL（端末別）
+    const STORE_URL_ANDROID = "https://play.google.com/store/apps/details?id=jp.naver.line.android&hl=ja";
+    const STORE_URL_IOS = "https://apps.apple.com/jp/app/line/id443904275"; // LINE (iPhone)
+    const STORE_URL_WEB = STORE_URL_ANDROID; // WebはGoogle Playへ
+
 
     // ===== デモ状態保存 =====
     const LS_KEY = "miniapp_checkin_done_soft";
@@ -431,23 +434,23 @@
       const ua = navigator.userAgent || "";
       const isIOS = /iPhone|iPad|iPod/i.test(ua);
       const isAndroid = /Android/i.test(ua);
-
-      if (isIOS) return STORE_URL_IOS;
-      if (isAndroid) return STORE_URL_ANDROID;
-
-      // PC等
-      return "";
+    
+      if(isIOS) return STORE_URL_IOS;
+      if(isAndroid) return STORE_URL_ANDROID;
+      return STORE_URL_WEB; // PCなど
     }
-
+    
     function openStore(){
       const url = getStoreUrl();
-      if(!url){
-        alert("PC/非対応端末のためストアURLを判定できません（モック）。");
-        return;
-      }
-      // WebView想定：locationで遷移
+      try{
+        if(window.liff && typeof liff.openWindow === "function"){
+          liff.openWindow({ url, external: true });
+          return;
+        }
+      }catch(e){ /* ignore */ }
       window.location.href = url;
     }
+
 
     function showInstallGateAndRedirect(){
       installGate.style.display = "block";
@@ -467,8 +470,8 @@
 
       redirectTimer = setTimeout(()=>{
         openStore();
-      }, 900); // 0.9秒後に遷移（体感“直後”＋メッセージも目に入る）
-    }
+      }, 3000);
+
 
     function cancelAutoRedirect(){
       if(redirectTimer){ clearTimeout(redirectTimer); redirectTimer = null; }
