@@ -162,12 +162,12 @@
 
       <div class="row">
         <div class="label">日時</div>
-        <div class="value">2026年3月15日　10:30</div>
+        <div class="value" id="reserveDateTime">2026年3月15日　10:30</div>
       </div>
 
       <div class="row">
         <div class="label">斎場名</div>
-        <div class="value">〇〇斎場</div>
+        <div class="value" id="reserveHall">〇〇斎場</div>
       </div>
 
       <div class="row">
@@ -190,7 +190,7 @@
           </div>
 
           <div class="help-actions">
-            <a class="btn btn-primary" href="./inquiry.html">問い合わせフォームを開く</a>
+            <a class="btn btn-primary" id="goInquiry" href="./inquiry.html">問い合わせフォームを開く</a>
           </div>
 
           <div class="note">
@@ -222,6 +222,7 @@
     btn.setAttribute('href', url.toString());
   }
 </script>
+
 
 </body>
 </html>
