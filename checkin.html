@@ -365,172 +365,169 @@
     </div>
   </section>
 
-  <script>
-    // ===== 設定：ストアURL（★ここだけ差し替え） =====
-    // ✅ LINEアプリのストアURL（端末別）
-    const STORE_URL_ANDROID = "https://play.google.com/store/apps/details?id=jp.naver.line.android&hl=ja";
-    const STORE_URL_IOS = "https://apps.apple.com/jp/app/line/id443904275"; // LINE (iPhone)
-    const STORE_URL_WEB = STORE_URL_ANDROID; // WebはGoogle Playへ
+<script>
+  // ✅ LINEアプリのストアURL（端末別）
+  const STORE_URL_ANDROID = "https://play.google.com/store/apps/details?id=jp.naver.line.android&hl=ja";
+  const STORE_URL_IOS = "https://apps.apple.com/jp/app/line/id443904275"; // LINE (iPhone)
+  const STORE_URL_WEB = STORE_URL_ANDROID; // WebはGoogle Playへ
 
+  // ===== デモ状態保存 =====
+  const LS_KEY = "miniapp_checkin_done_soft";
 
-    // ===== デモ状態保存 =====
-    const LS_KEY = "miniapp_checkin_done_soft";
+  const statusPill = document.getElementById("statusPill");
+  const statusText = document.getElementById("statusText");
+  const statusSub  = document.getElementById("statusSub");
+  const checkinBtn = document.getElementById("checkinBtn");
+  const resetBtn   = document.getElementById("resetBtn");
+  const checkedAt  = document.getElementById("checkedAt");
 
-    const statusPill = document.getElementById("statusPill");
-    const statusText = document.getElementById("statusText");
-    const statusSub  = document.getElementById("statusSub");
-    const checkinBtn = document.getElementById("checkinBtn");
-    const resetBtn   = document.getElementById("resetBtn");
-    const checkedAt  = document.getElementById("checkedAt");
+  // 全画面誘導
+  const installGate = document.getElementById("installGate");
+  const cdEl = document.getElementById("cd");
+  const goStoreBtn = document.getElementById("goStoreBtn");
+  const skipBtn = document.getElementById("skipBtn");
 
-    // 全画面誘導
-    const installGate = document.getElementById("installGate");
-    const cdEl = document.getElementById("cd");
-    const goStoreBtn = document.getElementById("goStoreBtn");
-    const skipBtn = document.getElementById("skipBtn");
+  let redirectTimer = null;
+  let countdownTimer = null;
+  let locked = false;
 
-    let redirectTimer = null;
-    let countdownTimer = null;
-    let locked = false;
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function nowText(){
+    const now = new Date();
+    return `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  }
 
-    function pad(n){ return String(n).padStart(2,"0"); }
-    function nowText(){
-      const now = new Date();
-      return `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    }
+  function saveCheckedIn(ts){
+    localStorage.setItem(LS_KEY, JSON.stringify({ checkedAt: ts }));
+  }
+  function clearCheckedIn(){
+    localStorage.removeItem(LS_KEY);
+  }
 
-    function saveCheckedIn(ts){
-      localStorage.setItem(LS_KEY, JSON.stringify({ checkedAt: ts }));
-    }
-    function clearCheckedIn(){
-      localStorage.removeItem(LS_KEY);
-    }
+  function setCheckedInUI(ts){
+    statusPill.classList.remove("pill-warn");
+    statusPill.classList.add("pill-ok");
+    statusText.textContent = "チェックイン済み";
+    statusSub.textContent  = "このままお進みください。";
 
-    function setCheckedInUI(ts){
-      statusPill.classList.remove("pill-warn");
-      statusPill.classList.add("pill-ok");
-      statusText.textContent = "チェックイン済み";
-      statusSub.textContent  = "このままお進みください。";
+    checkedAt.textContent = ts;
 
-      checkedAt.textContent = ts;
+    checkinBtn.style.display = "none";
+    resetBtn.style.display   = "block";
+  }
 
-      checkinBtn.style.display = "none";
-      resetBtn.style.display   = "block";
-    }
+  function setNotCheckedInUI(){
+    statusPill.classList.remove("pill-ok");
+    statusPill.classList.add("pill-warn");
+    statusText.textContent = "未チェックイン";
+    statusSub.textContent  = "受付で案内があった方は「チェックインする」を押してください";
 
-    function setNotCheckedInUI(){
-      statusPill.classList.remove("pill-ok");
-      statusPill.classList.add("pill-warn");
-      statusText.textContent = "未チェックイン";
-      statusSub.textContent  = "受付で案内があった方は「チェックインする」を押してください";
+    checkedAt.textContent = "—";
 
-      checkedAt.textContent = "—";
+    checkinBtn.style.display = "block";
+    resetBtn.style.display   = "none";
+  }
 
-      checkinBtn.style.display = "block";
-      resetBtn.style.display   = "none";
-    }
+  function getStoreUrl(){
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
 
-    function getStoreUrl(){
-      const ua = navigator.userAgent || "";
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
-      const isAndroid = /Android/i.test(ua);
-    
-      if(isIOS) return STORE_URL_IOS;
-      if(isAndroid) return STORE_URL_ANDROID;
-      return STORE_URL_WEB; // PCなど
-    }
-    
-    function openStore(){
-      const url = getStoreUrl();
-      try{
-        if(window.liff && typeof liff.openWindow === "function"){
-          liff.openWindow({ url, external: true });
-          return;
-        }
-      }catch(e){ /* ignore */ }
-      window.location.href = url;
-    }
+    if(isIOS) return STORE_URL_IOS;
+    if(isAndroid) return STORE_URL_ANDROID;
+    return STORE_URL_WEB; // PCなど
+  }
 
+  function openStore(){
+    const url = getStoreUrl();
+    try{
+      if(window.liff && typeof liff.openWindow === "function"){
+        liff.openWindow({ url, external: true });
+        return;
+      }
+    }catch(e){ /* ignore */ }
+    window.location.href = url;
+  }
 
-    function showInstallGateAndRedirect(){
-      installGate.style.display = "block";
+  function cancelAutoRedirect(){
+    if(redirectTimer){ clearTimeout(redirectTimer); redirectTimer = null; }
+    if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+  }
 
-      // 「見せたい」ので、ほんの一瞬だけ表示してから自動遷移
-      let cd = 2; // 見せる秒数（必要なら 1 にしてさらに“直後感”を強めてもOK）
-      cdEl.textContent = String(cd);
+  function showInstallGateAndRedirect(){
+    installGate.style.display = "block";
 
-      countdownTimer = setInterval(()=>{
-        cd -= 1;
-        cdEl.textContent = String(Math.max(cd, 0));
-        if(cd <= 0){
-          clearInterval(countdownTimer);
-          countdownTimer = null;
-        }
-      }, 1000);
+    // ✅ 3秒表示に合わせてカウントダウンも 3 に
+    let cd = 3;
+    cdEl.textContent = String(cd);
 
-      redirectTimer = setTimeout(()=>{
-        openStore();
-      }, 3000);
+    countdownTimer = setInterval(()=>{
+      cd -= 1;
+      cdEl.textContent = String(Math.max(cd, 0));
+      if(cd <= 0){
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+    }, 1000);
 
+    // ✅ 3秒後にストアへ
+    redirectTimer = setTimeout(()=>{
+      openStore();
+    }, 3000);
+  }
 
-    function cancelAutoRedirect(){
-      if(redirectTimer){ clearTimeout(redirectTimer); redirectTimer = null; }
-      if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
-    }
-
-    // 初期表示
-    (function init(){
-      const raw = localStorage.getItem(LS_KEY);
-      if(!raw){ setNotCheckedInUI(); return; }
-      try{
-        const data = JSON.parse(raw);
-        if(data && data.checkedAt){
-          setCheckedInUI(data.checkedAt);
-        }else{
-          setNotCheckedInUI();
-        }
-      }catch{
+  // 初期表示
+  (function init(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){ setNotCheckedInUI(); return; }
+    try{
+      const data = JSON.parse(raw);
+      if(data && data.checkedAt){
+        setCheckedInUI(data.checkedAt);
+      }else{
         setNotCheckedInUI();
       }
-    })();
-
-    // ✅ チェックイン（押下直後：全画面訴求 → ストアへ）
-    checkinBtn.addEventListener("click", ()=>{
-      if(locked) return;
-      locked = true;
-
-      const ts = nowText();
-      saveCheckedIn(ts);
-      setCheckedInUI(ts);
-
-      // アラートは出さない（ストア遷移を邪魔するので）
-      showInstallGateAndRedirect();
-
-      // 二重タップ対策：少し後に解除
-      setTimeout(()=>{ locked = false; }, 1500);
-    });
-
-    // モック：未チェックインに戻す
-    resetBtn.addEventListener("click", ()=>{
-      cancelAutoRedirect();
-      installGate.style.display = "none";
-      clearCheckedIn();
+    }catch{
       setNotCheckedInUI();
-      alert("未チェックインに戻しました（モック）。");
-    });
+    }
+  })();
 
-    // ストアへ進む（手動）
-    goStoreBtn.addEventListener("click", ()=>{
-      cancelAutoRedirect();
-      openStore();
-    });
+  // ✅ チェックイン（押下直後：全画面訴求 → ストアへ）
+  checkinBtn.addEventListener("click", ()=>{
+    if(locked) return;
+    locked = true;
 
-    // 今はしない（自動遷移をキャンセルして閉じる）
-    skipBtn.addEventListener("click", ()=>{
-      cancelAutoRedirect();
-      installGate.style.display = "none";
-      // このままミニアプリで続行
-    });
-  </script>
+    const ts = nowText();
+    saveCheckedIn(ts);
+    setCheckedInUI(ts);
+
+    // アラートは出さない（ストア遷移を邪魔するので）
+    showInstallGateAndRedirect();
+
+    // 二重タップ対策：少し後に解除
+    setTimeout(()=>{ locked = false; }, 1500);
+  });
+
+  // モック：未チェックインに戻す
+  resetBtn.addEventListener("click", ()=>{
+    cancelAutoRedirect();
+    installGate.style.display = "none";
+    clearCheckedIn();
+    setNotCheckedInUI();
+    alert("未チェックインに戻しました（モック）。");
+  });
+
+  // ストアへ進む（手動）
+  goStoreBtn.addEventListener("click", ()=>{
+    cancelAutoRedirect();
+    openStore();
+  });
+
+  // 今はしない（自動遷移をキャンセルして閉じる）
+  skipBtn.addEventListener("click", ()=>{
+    cancelAutoRedirect();
+    installGate.style.display = "none";
+  });
+</script>
 </body>
 </html>
