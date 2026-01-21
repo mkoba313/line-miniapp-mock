@@ -1,19 +1,431 @@
-<script>
-  // 本番では LIFF から displayName を取得
-  // document.getElementById("userName").textContent = profile.displayName;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>お問い合わせ</title>
 
-  // 問い合わせボタン押下時に予約情報を引き継ぐ（URLパラメータ）
-  const btn = document.getElementById('goInquiry');
-  if(btn){
-    const name = (document.getElementById('userName')?.textContent || '').trim();
-    const dt   = (document.getElementById('reserveDateTime')?.textContent || '').trim();
-    const hall = (document.getElementById('reserveHall')?.textContent || '').trim();
+  <style>
+    :root{
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --radius:16px;
+      --accent:#2563eb;
+      --chip:#f3f4f6;
+      --danger:#b91c1c;
+    }
 
-    const url = new URL(btn.getAttribute('href'), location.href);
-    if(name) url.searchParams.set('name', name);
-    if(dt)   url.searchParams.set('dt', dt);
-    if(hall) url.searchParams.set('hall', hall);
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-    btn.setAttribute('href', url.toString());
-  }
-</script>
+    .header{
+      height:64px;
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items:center;
+      border-bottom:1px solid var(--line);
+      padding:0 16px;
+    }
+    .header-title{
+      grid-column:2;
+      font-size:22px;
+      font-weight:900;
+      text-align:center;
+    }
+    .header-back{
+      grid-column:1;
+      justify-self:start;
+      font-size:18px;
+      font-weight:800;
+      text-decoration:none;
+      color:var(--accent);
+    }
+
+    .wrap{
+      max-width:520px;
+      margin:0 auto;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .title{
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .note{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+
+    .chip{
+      background:var(--chip);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .grid{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    label{
+      display:block;
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    input, select, textarea{
+      width:100%;
+      font-size:16px;
+      padding:14px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      outline:none;
+      background:#fff;
+    }
+
+    textarea{ min-height:140px; resize:vertical; }
+
+    .row2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    .checks{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:4px;
+    }
+
+    .checkline{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      font-size:15px;
+      line-height:1.5;
+      color:var(--text);
+    }
+
+    .checkline input{
+      width:22px;
+      height:22px;
+      margin-top:2px;
+      flex:0 0 auto;
+    }
+
+    .btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:56px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      text-decoration:none;
+      font-size:18px;
+      font-weight:900;
+      color:var(--text);
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      border-color:rgba(37,99,235,.35);
+      color:#fff;
+      background:var(--accent);
+    }
+
+    .error{
+      color:var(--danger);
+      font-size:14px;
+      display:none;
+    }
+
+    .mini-preview{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:15px;
+    }
+    .mini-preview .k{ color:var(--muted); font-size:13px; }
+    .mini-preview .v{ font-weight:800; font-size:16px; line-height:1.3; }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <a class="header-back" href="./reservation.html">戻る</a>
+    <div class="header-title">お問い合わせ</div>
+    <div></div>
+  </header>
+
+  <div class="wrap">
+
+    <div class="card">
+      <div class="title">入力のお願い</div>
+      <div class="note">
+        予約内容の特定と本人確認のため、入力項目があります。<br />
+        目安返信：1〜2営業日以内
+      </div>
+    </div>
+
+    <!-- 予約情報の引き継ぎ表示（URLパラメータがある場合に表示） -->
+    <div class="card" id="prefillCard" style="display:none;">
+      <div class="title">予約情報（引き継ぎ）</div>
+      <div class="mini-preview">
+        <div>
+          <div class="k">申込者</div>
+          <div class="v" id="pvName">-</div>
+        </div>
+        <div>
+          <div class="k">日時</div>
+          <div class="v" id="pvDt">-</div>
+        </div>
+        <div>
+          <div class="k">斎場名</div>
+          <div class="v" id="pvHall">-</div>
+        </div>
+      </div>
+      <div class="note">※引き継ぎ内容と異なる場合は、下の入力欄を優先してご記入ください。</div>
+    </div>
+
+    <form class="card" id="inquiryForm">
+      <div class="grid">
+
+        <!-- 1) お問い合わせ種別（退会などの直接文言は出さない） -->
+        <div>
+          <label for="category">お問い合わせ種別（必須）</label>
+          <select id="category" name="category" required>
+            <option value="" selected disabled>選択してください</option>
+            <option value="reservation_change">予約の確認・変更</option>
+            <option value="reservation_cancel">予約のキャンセル</option>
+            <option value="account_consult">アカウントに関するご相談</option>
+            <option value="other">その他</option>
+          </select>
+        </div>
+
+        <!-- 2) 予約の特定情報（入力多め） -->
+        <div class="chip">
+          <div class="title" style="font-size:16px;">予約の特定情報</div>
+          <div class="note">予約情報画面に記載の内容を入力してください。</div>
+
+          <div class="grid" style="margin-top:10px;">
+            <div>
+              <label for="reservationNo">予約番号（任意 / 分かる場合）</label>
+              <input id="reservationNo" name="reservationNo" placeholder="例）R-20260315-0001" />
+            </div>
+
+            <div class="row2">
+              <div>
+                <label for="reservedDate">予約日（必須）</label>
+                <input id="reservedDate" name="reservedDate" type="date" required />
+              </div>
+              <div>
+                <label for="reservedTime">予約時間（必須）</label>
+                <input id="reservedTime" name="reservedTime" type="time" required />
+              </div>
+            </div>
+
+            <div>
+              <label for="hallName">斎場名（必須）</label>
+              <input id="hallName" name="hallName" placeholder="例）〇〇斎場" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- 3) ご本人確認（入力多め） -->
+        <div class="chip">
+          <div class="title" style="font-size:16px;">ご本人確認</div>
+          <div class="note">照合のため、できるだけ正確に入力してください。</div>
+
+          <div class="grid" style="margin-top:10px;">
+            <div>
+              <label for="name">申込者氏名（必須）</label>
+              <input id="name" name="name" placeholder="例）山田 太郎" required />
+            </div>
+
+            <div class="row2">
+              <div>
+                <label for="phone">電話番号（必須）</label>
+                <input id="phone" name="phone" inputmode="tel" placeholder="例）09012345678" required />
+              </div>
+              <div>
+                <label for="email">メールアドレス（必須）</label>
+                <input id="email" name="email" type="email" placeholder="例）taro@example.com" required />
+              </div>
+            </div>
+
+            <div>
+              <label for="address">住所（任意）</label>
+              <input id="address" name="address" placeholder="例）東京都〇〇区…" />
+            </div>
+
+            <div>
+              <label for="contactMethod">希望連絡方法（必須）</label>
+              <select id="contactMethod" name="contactMethod" required>
+                <option value="" selected disabled>選択してください</option>
+                <option value="email">メール</option>
+                <option value="phone">電話</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4) 内容 -->
+        <div>
+          <label for="detail">お問い合わせ内容（必須）</label>
+          <textarea id="detail" name="detail" placeholder="状況・ご希望を具体的にご記入ください。" required></textarea>
+          <div class="note">※内容が短い場合、確認のため追加連絡が発生することがあります。</div>
+        </div>
+
+        <!-- 5) 追加確認：カテゴリが「アカウントに関するご相談」のときだけ表示 -->
+        <div id="accountBlock" class="chip" style="display:none;">
+          <div class="title" style="font-size:16px;">追加確認</div>
+          <div class="note">ご本人確認のため、追加で入力をお願いします。</div>
+
+          <div class="grid" style="margin-top:10px;">
+            <div>
+              <label for="accountTopic">ご相談内容（必須）</label>
+              <select id="accountTopic" name="accountTopic">
+                <option value="" selected disabled>選択してください</option>
+                <option value="login">ログイン・認証について</option>
+                <option value="profile">登録情報について</option>
+                <option value="privacy">個人情報の取り扱いについて</option>
+                <option value="procedure">各種手続きについて</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="confirmText">確認入力（必須）</label>
+              <div class="note" id="confirmCodeView">確認コード：----</div>
+              <input id="confirmText" name="confirmText" placeholder="上の確認コードを入力してください" />
+              <div class="note">※誤送信防止のため入力が必要です。</div>
+              <div class="error" id="confirmTextError">入力が一致しません。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6) 同意（必須） -->
+        <div class="checks">
+          <div class="checkline">
+            <input type="checkbox" id="agree1" required />
+            <label for="agree1" style="margin:0;color:inherit;">
+              入力内容が正確であることを確認しました（必須）
+            </label>
+          </div>
+          <div class="checkline">
+            <input type="checkbox" id="agree2" required />
+            <label for="agree2" style="margin:0;color:inherit;">
+              受付後、確認のため追加連絡が入る場合があることに同意します（必須）
+            </label>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">送信する</button>
+
+        <div class="note">
+          ※この画面はモックです。本番では送信APIへPOSTします。
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // ===== 予約情報の引き継ぎ（URLパラメータ） =====
+    const params = new URLSearchParams(location.search);
+    const pName = params.get('name') || '';
+    const pDt   = params.get('dt') || '';
+    const pHall = params.get('hall') || '';
+
+    if (pName || pDt || pHall) {
+      document.getElementById('prefillCard').style.display = 'flex';
+      document.getElementById('pvName').textContent = pName || '-';
+      document.getElementById('pvDt').textContent   = pDt || '-';
+      document.getElementById('pvHall').textContent = pHall || '-';
+
+      // できる範囲でフォームへ反映（hall / name）
+      if (pName) document.getElementById('name').value = pName;
+      if (pHall) document.getElementById('hallName').value = pHall;
+      // 日時は形式がまちまちなので表示のみ（必要なら reservation.html 側の形式を date/time にして連携可能）
+    }
+
+    // ===== 追加確認（確認コード） =====
+    const category = document.getElementById('category');
+    const accountBlock = document.getElementById('accountBlock');
+    const accountTopic = document.getElementById('accountTopic');
+    const confirmText = document.getElementById('confirmText');
+    const confirmTextError = document.getElementById('confirmTextError');
+    const confirmCodeView = document.getElementById('confirmCodeView');
+    let confirmCode = '';
+
+    function genCode(){
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let s = '';
+      for(let i=0;i<4;i++) s += chars[Math.floor(Math.random()*chars.length)];
+      return s;
+    }
+
+    category.addEventListener('change', () => {
+      const isAccount = category.value === 'account_consult';
+      accountBlock.style.display = isAccount ? 'block' : 'none';
+
+      if(isAccount){
+        confirmCode = genCode();
+        confirmCodeView.textContent = `確認コード：${confirmCode}`;
+      }else{
+        accountTopic.value = '';
+        confirmText.value = '';
+        confirmTextError.style.display = 'none';
+        confirmCodeView.textContent = '確認コード：----';
+        confirmCode = '';
+      }
+    });
+
+    document.getElementById('inquiryForm').addEventListener('submit', (e) => {
+      if(category.value === 'account_consult'){
+        if(!accountTopic.value){
+          e.preventDefault();
+          alert('ご相談内容を選択してください。');
+          return;
+        }
+        if(confirmText.value.trim().toUpperCase() !== confirmCode){
+          e.preventDefault();
+          confirmTextError.style.display = 'block';
+          confirmText.focus();
+          return;
+        }
+      }
+
+      // 本番はここで fetch で送信
+      e.preventDefault();
+      alert('送信しました（モック）。');
+      // location.href = './inquiry_done.html';
+    });
+  </script>
+</body>
+</html>
