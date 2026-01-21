@@ -1,0 +1,19 @@
+<script>
+  // 本番では LIFF から displayName を取得
+  // document.getElementById("userName").textContent = profile.displayName;
+
+  // 問い合わせボタン押下時に予約情報を引き継ぐ（URLパラメータ）
+  const btn = document.getElementById('goInquiry');
+  if(btn){
+    const name = (document.getElementById('userName')?.textContent || '').trim();
+    const dt   = (document.getElementById('reserveDateTime')?.textContent || '').trim();
+    const hall = (document.getElementById('reserveHall')?.textContent || '').trim();
+
+    const url = new URL(btn.getAttribute('href'), location.href);
+    if(name) url.searchParams.set('name', name);
+    if(dt)   url.searchParams.set('dt', dt);
+    if(hall) url.searchParams.set('hall', hall);
+
+    btn.setAttribute('href', url.toString());
+  }
+</script>
