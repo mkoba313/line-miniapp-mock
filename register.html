@@ -31,7 +31,7 @@
       top:0;
       background:#fff;
       border-bottom:1px solid var(--border);
-      padding:14px 16px;
+      padding:12px 16px;
       z-index:10;
     }
     .header-row{
@@ -49,7 +49,7 @@
       white-space:nowrap;
     }
     .title{
-      font-weight:800;
+      font-weight:900;
       font-size:18px;
       text-align:center;
       flex:1;
@@ -57,11 +57,34 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    main{
-      max-width:780px;
-      margin:0 auto;
-      padding:16px;
+    /* ✅ 右上切替（セグ） */
+    .seg{
+      display:flex;
+      gap:4px;
+      align-items:center;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:4px;
+      white-space:nowrap;
     }
+    .seg a{
+      text-decoration:none;
+      border:1px solid transparent;
+      background:#fff;
+      padding:6px 10px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:900;
+      color:var(--text);
+    }
+    .seg a.active{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+
+    main{ max-width:780px; margin:0 auto; padding:16px; }
     .card{
       background:var(--card);
       border:1px solid var(--border);
@@ -70,17 +93,8 @@
       padding:16px;
       margin-bottom:14px;
     }
-    .section-title{
-      font-weight:800;
-      font-size:18px;
-      margin:0 0 10px 0;
-    }
-    label{
-      display:block;
-      font-weight:700;
-      margin:12px 0 6px 0;
-      font-size:16px;
-    }
+    .section-title{ font-weight:800; font-size:18px; margin:0 0 10px 0; }
+    label{ display:block; font-weight:700; margin:12px 0 6px 0; font-size:16px; }
     input[type="text"], input[type="tel"], input[type="email"]{
       display:block;
       width:100%;
@@ -94,66 +108,50 @@
       appearance:none;
       background:#fff;
     }
-    input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus{
-      border-color:#9ca3af;
-    }
-    .note{
-      color:var(--muted);
-      font-size:14px;
-      margin-top:6px;
-    }
+    input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus{ border-color:#9ca3af; }
+    .note{ color:var(--muted); font-size:14px; margin-top:6px; }
 
-    /* ✅ 利用区分：横並び（狭い画面は縦） */
-    .role-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
+    /* ✅ 利用区分（任意）：喪主以外のみチェックできる */
+    .opt-row{
       margin-top:8px;
-    }
-    @media (max-width: 520px){
-      .role-grid{ grid-template-columns: 1fr; }
-    }
-    .role-card{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
       padding:14px 12px;
       border:1px solid var(--border);
       border-radius:14px;
       background:#fff;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
       cursor:pointer;
     }
-    .role-card input[type="radio"]{
+    .opt-row input[type="checkbox"]{
       width:22px;
       height:22px;
       margin-top:2px;
       accent-color:#111827;
       flex:0 0 auto;
     }
-    .role-text{ min-width:0; }
-    .role-title{ font-weight:900; font-size:16px; line-height:1.2; }
-    .role-sub{
-      margin-top:4px;
-      font-size:13px;
-      color:var(--muted);
-      font-weight:700;
-      line-height:1.45;
-    }
-    .role-card:has(input:checked){
+    .opt-title{ font-weight:900; font-size:16px; line-height:1.2; }
+    .opt-sub{ margin-top:4px; font-size:13px; color:var(--muted); font-weight:700; line-height:1.45; }
+    .opt-row:has(input:checked){
       border-color:#9ca3af;
       box-shadow:0 0 0 3px rgba(17,24,39,.06);
     }
 
+    /* ✅ 喪主情報（喪主以外のときだけ表示） */
+    .chief-box{
+      margin-top:12px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fafafa;
+      display:none;
+    }
+    .chief-title{ font-weight:900; margin:0 0 6px 0; font-size:15px; }
+    .chief-sub{ margin:0 0 10px 0; color:var(--muted); font-size:13px; font-weight:700; }
+
     /* ✅ 生年月日（年月日セレクト） */
-    .dob-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap:10px;
-      margin-top:6px;
-    }
-    @media (max-width: 520px){
-      .dob-grid{ grid-template-columns: 1fr; }
-    }
+    .dob-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:6px; }
+    @media (max-width: 520px){ .dob-grid{ grid-template-columns: 1fr; } }
     .select{
       width:100%;
       max-width:100%;
@@ -167,9 +165,7 @@
       appearance:none;
     }
     .select:focus{ border-color:#9ca3af; }
-    .select-wrap{
-      position:relative;
-    }
+    .select-wrap{ position:relative; }
     .select-wrap::after{
       content:"▾";
       position:absolute;
@@ -181,57 +177,15 @@
       pointer-events:none;
     }
 
-    /* ✅ 喪主情報（喪主以外のときだけ表示） */
-    .chief-box{
-      margin-top:12px;
-      padding:12px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:#fafafa;
-      display:none;
-    }
-    .chief-title{
-      font-weight:900;
-      margin:0 0 6px 0;
-      font-size:15px;
-    }
-    .chief-sub{
-      margin:0 0 10px 0;
-      color:var(--muted);
-      font-size:13px;
-      font-weight:700;
-    }
-
-    details{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px 12px;
-      background:#fff;
-    }
+    details{ border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:#fff; }
     details + details{ margin-top:10px; }
-    summary{
-      cursor:pointer;
-      font-weight:800;
-      font-size:16px;
-      list-style:none;
-    }
+    summary{ cursor:pointer; font-weight:800; font-size:16px; list-style:none; }
     summary::-webkit-details-marker{ display:none; }
-    .summary-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
+    .summary-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .badge{
-      font-size:12px;
-      color:#fff;
-      background:#ef4444;
-      padding:2px 8px;
-      border-radius:999px;
-      font-weight:800;
-      flex:0 0 auto;
+      font-size:12px; color:#fff; background:#ef4444;
+      padding:2px 8px; border-radius:999px; font-weight:800; flex:0 0 auto;
     }
-
     .scrollbox{
       margin-top:10px;
       border:1px solid var(--border);
@@ -242,11 +196,7 @@
       font-size:14px;
       background:#fafafa;
     }
-    .scroll-hint{
-      margin-top:8px;
-      font-size:13px;
-      color:var(--muted);
-    }
+    .scroll-hint{ margin-top:8px; font-size:13px; color:var(--muted); }
     .agree-row{
       display:flex;
       align-items:flex-start;
@@ -255,26 +205,11 @@
       padding-top:10px;
       border-top:1px dashed var(--border);
     }
-    input[type="checkbox"]{
-      width:22px;
-      height:22px;
-      margin-top:2px;
-      accent-color:#111827;
-    }
-    .checkbox-label{
-      font-size:16px;
-      font-weight:800;
-    }
-    .checkbox-sub{
-      font-size:13px;
-      color:var(--muted);
-      margin-top:2px;
-    }
+    input[type="checkbox"]{ width:22px; height:22px; margin-top:2px; accent-color:#111827; }
+    .checkbox-label{ font-size:16px; font-weight:800; }
+    .checkbox-sub{ font-size:13px; color:var(--muted); margin-top:2px; }
 
-    .cta{
-      display:grid;
-      gap:10px;
-    }
+    .cta{ display:grid; gap:10px; }
     button{
       width:100%;
       font-size:18px;
@@ -286,11 +221,7 @@
       background:var(--primary);
       color:#fff;
     }
-    button:disabled{
-      cursor:not-allowed;
-      background:#d1d5db;
-      color:#6b7280;
-    }
+    button:disabled{ cursor:not-allowed; background:#d1d5db; color:#6b7280; }
   </style>
 </head>
 
@@ -299,7 +230,10 @@
   <div class="header-row">
     <div class="brand">喪主の力</div>
     <div class="title">火葬申込み</div>
-    <div style="width:72px;"></div>
+    <div class="seg" aria-label="申込み種別切替">
+      <a class="active" href="./register.html">火葬申込み</a>
+      <a href="./participant_register.html">参加申込み</a>
+    </div>
   </div>
 </header>
 
@@ -307,27 +241,17 @@
   <form id="registerForm" class="card" onsubmit="return false;">
     <h2 class="section-title">会員登録（火葬申込み）</h2>
 
-    <!-- ✅ 利用区分（喪主 / 喪主以外） -->
-    <label>利用区分（必須）</label>
-    <div class="role-grid" role="radiogroup" aria-label="利用区分">
-      <label class="role-card" for="roleChief">
-        <input type="radio" name="role" value="chief" id="roleChief" required>
-        <div class="role-text">
-          <div class="role-title">喪主</div>
-          <div class="role-sub">申込者として手続きを進めます</div>
-        </div>
-      </label>
+    <!-- ✅ 利用区分（任意）：喪主以外のみ（デフォルト未選択） -->
+    <label>利用区分（任意）</label>
+    <label class="opt-row" for="roleOther">
+      <input id="roleOther" type="checkbox" />
+      <div>
+        <div class="opt-title">喪主以外</div>
+        <div class="opt-sub">※喪主の方以外が申込む場合はチェックしてください（喪主情報の入力が必要になります）</div>
+      </div>
+    </label>
 
-      <label class="role-card" for="roleOther">
-        <input type="radio" name="role" value="other" id="roleOther" required>
-        <div class="role-text">
-          <div class="role-title">喪主以外</div>
-          <div class="role-sub">喪主情報の入力が必要です</div>
-        </div>
-      </label>
-    </div>
-
-    <!-- ✅ 喪主以外のときだけ表示 -->
+    <!-- ✅ 喪主以外のときだけ表示（申込者氏名の上） -->
     <div id="chiefBox" class="chief-box" aria-live="polite">
       <p class="chief-title">喪主の情報（必須）</p>
       <p class="chief-sub">※「喪主以外」を選択した場合のみ入力してください。</p>
@@ -342,11 +266,9 @@
     <label for="name">申込者氏名（必須）</label>
     <input id="name" name="name" type="text" placeholder="例：山田 太郎" autocomplete="name" required />
 
-    <!-- ✅ 追加：申込者氏名（ふりがな） -->
     <label for="nameKana">申込者氏名（ふりがな）（必須）</label>
     <input id="nameKana" name="nameKana" type="text" placeholder="例：やまだ たろう" inputmode="kana" autocomplete="off" required />
 
-    <!-- 生年月日 -->
     <label>生年月日（必須）</label>
     <div class="dob-grid" aria-label="生年月日">
       <div class="select-wrap">
@@ -404,27 +326,7 @@
       <div id="cremationScroll" class="scrollbox" aria-label="火葬の規約（必須）">
         <p><strong>【火葬の規約】</strong></p>
         <p>本規約は、火葬申込みに関する手続き・利用条件・注意事項を定めるものです。</p>
-        <p><strong>1. 申込みについて</strong></p>
-        <ul>
-          <li>申込内容に不備がある場合、受付ができない場合があります。</li>
-          <li>入力内容は、正確にご記入ください。</li>
-        </ul>
-        <p><strong>2. 変更・取消について</strong></p>
-        <ul>
-          <li>変更・取消の可否や期限は、斎場・運用ルールに従います。</li>
-        </ul>
-        <p><strong>3. 個人情報の取扱い（火葬の規約に含む）</strong></p>
-        <ul>
-          <li>取得する情報：氏名、ふりがな、生年月日、電話番号、住所、メールアドレス（任意）、その他申込みに必要な情報</li>
-          <li>利用目的：申込み受付、本人確認、連絡、運営上必要な案内、問合せ対応 等</li>
-          <li>第三者提供：法令に基づく場合等を除き、本人同意なく提供しません。</li>
-          <li>安全管理：不正アクセス等の防止に努めます。</li>
-        </ul>
-        <p><strong>4. 免責</strong></p>
-        <ul>
-          <li>通信障害等により申込みが正常に行えない場合があります。</li>
-        </ul>
-        <p class="note">（ここは正式な規約文に差し替えてください）</p>
+        <p><strong>（正式文面に差し替えてください）</strong></p>
       </div>
 
       <div id="cremationHint" class="scroll-hint">※最後までスクロールするとチェックできます。</div>
@@ -453,24 +355,7 @@
           <li><strong>無料Wi-Fi接続</strong>：斎場内で通信環境が不安な場合でも使いやすくなります。</li>
           <li><strong>モバイルオーダー</strong>：売店や対象サービスをスマホからスムーズに注文できます。</li>
         </ul>
-        <p><strong>1. 提供機能</strong></p>
-        <ul>
-          <li>館内案内、通知、（対象の場合）モバイルオーダー等の機能を提供します。</li>
-        </ul>
-        <p><strong>2. 利用上の注意</strong></p>
-        <ul>
-          <li>端末・通信環境により一部機能が利用できない場合があります。</li>
-          <li>混雑時など、機能の提供を一時停止する場合があります。</li>
-        </ul>
-        <p><strong>3. 禁止事項</strong></p>
-        <ul>
-          <li>不正利用、第三者になりすます行為、サービスの妨害行為 等</li>
-        </ul>
-        <p><strong>4. 免責</strong></p>
-        <ul>
-          <li>システム障害等により機能が利用できない場合があります。</li>
-        </ul>
-        <p class="note">（ここも正式な規約文に差し替えてください）</p>
+        <p><strong>（正式文面に差し替えてください）</strong></p>
       </div>
 
       <div id="miniappHint" class="scroll-hint">※最後までスクロールするとチェックできます。</div>
@@ -492,8 +377,7 @@
 </main>
 
 <script>
-  // ===== 利用区分：喪主以外のときだけ喪主情報を表示＆必須化 =====
-  const roleChief = document.getElementById("roleChief");
+  // ===== 喪主以外チェックで喪主情報を表示＆必須化 =====
   const roleOther = document.getElementById("roleOther");
   const chiefBox  = document.getElementById("chiefBox");
   const chiefName = document.getElementById("chiefName");
@@ -503,21 +387,17 @@
     chiefName.required = isRequired;
     chiefKana.required = isRequired;
   }
-
-  function onRoleChange(){
+  function onRoleOtherChange(){
     const isOther = roleOther.checked;
     chiefBox.style.display = isOther ? "block" : "none";
     setChiefRequired(isOther);
-
     if(!isOther){
       chiefName.value = "";
       chiefKana.value = "";
     }
   }
-
-  roleChief.addEventListener("change", onRoleChange);
-  roleOther.addEventListener("change", onRoleChange);
-  onRoleChange(); // 初期
+  roleOther.addEventListener("change", onRoleOtherChange);
+  onRoleOtherChange();
 
   // ===== 生年月日：年/月/日を生成 =====
   const birthYear  = document.getElementById("birthYear");
@@ -543,16 +423,12 @@
       birthMonth.appendChild(opt);
     }
   }
-  function daysInMonth(y,m){
-    return new Date(y, m, 0).getDate(); // mは1-12
-  }
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
   function rebuildDays(){
     birthDay.querySelectorAll("option:not([disabled])").forEach(o=>o.remove());
-
     const y = parseInt(birthYear.value,10);
     const m = parseInt(birthMonth.value,10);
     if(!y || !m) return;
-
     const max = daysInMonth(y,m);
     for(let d=1; d<=max; d++){
       const opt = document.createElement("option");
@@ -562,18 +438,11 @@
     }
   }
   function syncHidden(){
-    const y = birthYear.value;
-    const m = birthMonth.value;
-    const d = birthDay.value;
+    const y = birthYear.value, m = birthMonth.value, d = birthDay.value;
     if(y && m && d){
-      const mm = String(m).padStart(2,"0");
-      const dd = String(d).padStart(2,"0");
-      birthdayHidden.value = `${y}-${mm}-${dd}`;
-    }else{
-      birthdayHidden.value = "";
-    }
+      birthdayHidden.value = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    }else birthdayHidden.value = "";
   }
-
   fillYears(); fillMonths();
   birthYear.addEventListener("change", ()=>{ rebuildDays(); birthDay.value=""; syncHidden(); });
   birthMonth.addEventListener("change", ()=>{ rebuildDays(); birthDay.value=""; syncHidden(); });
@@ -598,43 +467,28 @@
   function nearBottom(el) {
     return el.scrollTop + el.clientHeight >= el.scrollHeight - 5;
   }
-
   function updateButtonState() {
-    const ok = cremationAgree.checked && miniappAgree.checked;
-    submitBtn.disabled = !ok;
+    submitBtn.disabled = !(cremationAgree.checked && miniappAgree.checked);
   }
-
   function syncMasterFromIndividuals() {
-    const both = cremationAgree.checked && miniappAgree.checked;
-    allAgree.checked = both;
+    allAgree.checked = (cremationAgree.checked && miniappAgree.checked);
   }
-
   function applyMasterAgree(isOn) {
     if (isOn) {
       cremationAgree.disabled = false;
       miniappAgree.disabled = false;
-
       cremationAgree.checked = true;
       miniappAgree.checked = true;
-
       cremationHint.textContent = "※「すべて同意」を選択中のため、スクロール不要です。";
       miniappHint.textContent = "※「すべて同意」を選択中のため、スクロール不要です。";
     } else {
       cremationAgree.checked = false;
       miniappAgree.checked = false;
-
       cremationAgree.disabled = !cremationUnlockedByScroll;
       miniappAgree.disabled = !miniappUnlockedByScroll;
-
-      cremationHint.textContent = cremationUnlockedByScroll
-        ? "※スクロール済みです。チェックできます。"
-        : "※最後までスクロールするとチェックできます。";
-
-      miniappHint.textContent = miniappUnlockedByScroll
-        ? "※スクロール済みです。チェックできます。"
-        : "※最後までスクロールするとチェックできます。";
+      cremationHint.textContent = cremationUnlockedByScroll ? "※スクロール済みです。チェックできます。" : "※最後までスクロールするとチェックできます。";
+      miniappHint.textContent = miniappUnlockedByScroll ? "※スクロール済みです。チェックできます。" : "※最後までスクロールするとチェックできます。";
     }
-
     updateButtonState();
   }
 
@@ -646,7 +500,6 @@
       cremationHint.textContent = "※スクロール済みです。チェックできます。";
     }
   });
-
   miniappScroll.addEventListener('scroll', () => {
     if (miniappUnlockedByScroll) return;
     if (!allAgree.checked && nearBottom(miniappScroll)) {
@@ -656,40 +509,21 @@
     }
   });
 
-  allAgree.addEventListener('change', () => {
-    applyMasterAgree(allAgree.checked);
-  });
+  allAgree.addEventListener('change', () => applyMasterAgree(allAgree.checked));
 
   cremationAgree.addEventListener('change', () => {
-    if (allAgree.checked && !cremationAgree.checked) {
-      allAgree.checked = false;
-      applyMasterAgree(false);
-      return;
-    }
-    syncMasterFromIndividuals();
-    updateButtonState();
+    if (allAgree.checked && !cremationAgree.checked) { allAgree.checked = false; applyMasterAgree(false); return; }
+    syncMasterFromIndividuals(); updateButtonState();
   });
-
   miniappAgree.addEventListener('change', () => {
-    if (allAgree.checked && !miniappAgree.checked) {
-      allAgree.checked = false;
-      applyMasterAgree(false);
-      return;
-    }
-    syncMasterFromIndividuals();
-    updateButtonState();
+    if (allAgree.checked && !miniappAgree.checked) { allAgree.checked = false; applyMasterAgree(false); return; }
+    syncMasterFromIndividuals(); updateButtonState();
   });
 
-  // submit -> 必須チェックしてホームへ
+  // submit
   submitBtn.addEventListener('click', () => {
-    const role = document.querySelector('input[name="role"]:checked')?.value;
-    if(!role){
-      alert("利用区分（喪主／喪主以外）を選択してください。");
-      return;
-    }
-
-    // 喪主以外なら喪主情報必須
-    if(role === "other"){
+    // 喪主以外チェック時は喪主情報必須
+    if(roleOther.checked){
       if(!chiefName.value.trim() || !chiefKana.value.trim()){
         alert("喪主の情報（喪主氏名・ふりがな）を入力してください。");
         return;
@@ -702,21 +536,10 @@
       return;
     }
 
-    // 本来はAPI送信→成功後に登録済み保存
+    // モック保存（必要なら後で使える）
     localStorage.setItem("miniapp_registered", "1");
-    localStorage.setItem("miniapp_user_role", role);
+    localStorage.setItem("miniapp_user_role", roleOther.checked ? "other" : "chief"); // chiefは“未選択扱い”として内部保存
     localStorage.setItem("miniapp_birthday", birthdayHidden.value);
-
-    // 任意：モックとして保存
-    localStorage.setItem("miniapp_applicant_name", document.getElementById("name").value.trim());
-    localStorage.setItem("miniapp_applicant_kana", document.getElementById("nameKana").value.trim());
-    if(role === "other"){
-      localStorage.setItem("miniapp_chief_name", chiefName.value.trim());
-      localStorage.setItem("miniapp_chief_kana", chiefKana.value.trim());
-    }else{
-      localStorage.removeItem("miniapp_chief_name");
-      localStorage.removeItem("miniapp_chief_kana");
-    }
 
     window.location.replace("./index.html");
   });
