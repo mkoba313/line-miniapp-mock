@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>オーダー（購入）</title>
+  <title>注文</title>
 
   <style>
     :root{
@@ -402,7 +402,7 @@
 <body>
   <header class="header">
     <div></div>
-    <div class="header-title">オーダー</div>
+    <div class="header-title">注文</div>
 
     <div class="header-right">
       <!-- cart -->
@@ -419,10 +419,10 @@
       <div class="toggleGroup">
         <div class="role-switch" aria-label="表示切替">
           <button id="btnHost" type="button">喪主</button>
-          <button id="btnCompanion" type="button">同行者</button>
+          <button id="btnCompanion" type="button">お連れ様</button>
         </div>
 
-        <!-- 精算確定：ONなら喪主/同行者どちらも購入操作ロック -->
+        <!-- 精算確定：ONなら喪主/お連れ様どちらも購入操作ロック -->
         <label class="toggle" title="精算確定">
           <span>精算確定</span>
           <input id="settleToggle" type="checkbox" />
@@ -484,21 +484,21 @@
       <div class="smallNote">※数量を入れて「カートに入れる」を押してください</div>
     </section>
 
-    <!-- ★同行者招待QR（商品一覧の下） -->
+    <!-- ★お連れ様招待QR（商品一覧の下） -->
     <section class="card" id="inviteSection">
       <div class="card-hd">
-        <div class="h">同行者に共有（QR）</div>
+        <div class="h">お連れ様に共有（QR）</div>
         <div class="pill">喪主のみ</div>
       </div>
 
       <div class="pay">
         <div class="payBox">
           <div class="smallNote" style="padding:0;text-align:left;">
-            同行者がこのQRを読み込むと、喪主のオーダーに紐づいた購入画面が開く想定です（画面モック）。
+            お連れ様がこのQRを読み込むと、喪主の注文に紐づいた購入画面が開く想定です（画面モック）。
           </div>
 
           <div class="qrWrap">
-            <div class="qr small" aria-label="同行者招待QRコード">
+            <div class="qr small" aria-label="お連れ様招待QRコード">
               <div id="qrInvite"></div>
             </div>
           </div>
@@ -509,17 +509,17 @@
       </div>
     </section>
 
-    <!-- 同行者側の案内（招待QRは見せない） -->
+    <!-- お連れ様側の案内（招待QRは見せない） -->
     <section class="card" id="companionHint" style="display:none;">
       <div class="card-hd">
-        <div class="h">同行者の方へ</div>
+        <div class="h">お連れ様の方へ</div>
         <div class="pill">案内</div>
       </div>
       <div class="pay">
         <div class="payBox">
           <div class="smallNote" style="padding:0;text-align:left;">
-            喪主が表示している「同行者用QR」を読み取って、この画面を開いてください。<br>
-            （読み取り後は、喪主のオーダーに紐づく想定です）
+            喪主が表示している「お連れ様用QR」を読み取って、この画面を開いてください。<br>
+            （読み取り後は、喪主の注文に紐づく想定です）
           </div>
         </div>
       </div>
@@ -855,7 +855,7 @@
       // 画面モック：グループIDを含んだ招待URLを生成してQR表示
       const gid = localStorage.getItem(LS_HOST_GROUP);
       const url = new URL(location.href);
-      url.searchParams.set("inviteGroup", gid); // 同行者が開いたらこのパラメータで紐づける想定
+      url.searchParams.set("inviteGroup", gid); // お連れ様が開いたらこのパラメータで紐づける想定
 
       // URLは長くなりがちなので「見た目だけ」出す
       const inviteUrl = url.toString();
