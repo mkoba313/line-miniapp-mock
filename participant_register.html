@@ -57,6 +57,8 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+
+    /* ✅ 右上切替（セグ） */
     .seg{
       display:flex;
       gap:4px;
@@ -110,33 +112,43 @@
     input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus{ border-color:#9ca3af; }
     .note{ color:var(--muted); font-size:14px; margin-top:6px; }
 
-    /* 固定表示用の小さな説明ボックス */
-    .fixed-box{
-      margin-top:10px;
+    /* ✅ 喪主情報（参加申込みでは常に必須） */
+    .chief-box{
+      margin-top:12px;
       padding:12px;
       border:1px solid var(--border);
       border-radius:14px;
       background:#fafafa;
     }
-    .fixed-title{ font-weight:900; margin:0 0 6px 0; font-size:15px; }
-    .fixed-sub{ margin:0; color:var(--muted); font-size:13px; font-weight:700; }
+    .chief-title{ font-weight:900; margin:0 0 6px 0; font-size:15px; }
+    .chief-sub{ margin:0 0 10px 0; color:var(--muted); font-size:13px; font-weight:700; }
 
-    /* 生年月日 */
+    /* ✅ 生年月日（年月日セレクト） */
     .dob-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:6px; }
     @media (max-width: 520px){ .dob-grid{ grid-template-columns: 1fr; } }
     .select{
-      width:100%; max-width:100%;
-      font-size:18px; padding:14px 12px;
-      border:1px solid var(--border); border-radius:12px;
-      background:#fff; outline:none;
-      -webkit-appearance:none; appearance:none;
+      width:100%;
+      max-width:100%;
+      font-size:18px;
+      padding:14px 12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      outline:none;
+      -webkit-appearance:none;
+      appearance:none;
     }
     .select:focus{ border-color:#9ca3af; }
     .select-wrap{ position:relative; }
     .select-wrap::after{
-      content:"▾"; position:absolute; right:12px; top:50%;
-      transform:translateY(-50%); color:#9ca3af;
-      font-size:16px; pointer-events:none;
+      content:"▾";
+      position:absolute;
+      right:12px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#9ca3af;
+      font-size:16px;
+      pointer-events:none;
     }
 
     details{ border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:#fff; }
@@ -149,13 +161,23 @@
       padding:2px 8px; border-radius:999px; font-weight:800; flex:0 0 auto;
     }
     .scrollbox{
-      margin-top:10px; border:1px solid var(--border); border-radius:12px;
-      height:180px; overflow:auto; padding:12px; font-size:14px; background:#fafafa;
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      height:180px;
+      overflow:auto;
+      padding:12px;
+      font-size:14px;
+      background:#fafafa;
     }
     .scroll-hint{ margin-top:8px; font-size:13px; color:var(--muted); }
     .agree-row{
-      display:flex; align-items:flex-start; gap:10px;
-      margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed var(--border);
     }
     input[type="checkbox"]{ width:22px; height:22px; margin-top:2px; accent-color:#111827; }
     .checkbox-label{ font-size:16px; font-weight:800; }
@@ -163,9 +185,15 @@
 
     .cta{ display:grid; gap:10px; }
     button{
-      width:100%; font-size:18px; font-weight:900;
-      padding:14px 12px; border:none; border-radius:14px;
-      cursor:pointer; background:var(--primary); color:#fff;
+      width:100%;
+      font-size:18px;
+      font-weight:900;
+      padding:14px 12px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      background:var(--primary);
+      color:#fff;
     }
     button:disabled{ cursor:not-allowed; background:#d1d5db; color:#6b7280; }
   </style>
@@ -187,17 +215,13 @@
   <form id="registerForm" class="card" onsubmit="return false;">
     <h2 class="section-title">登録（参加申込み）</h2>
 
-    <!-- ✅ このページは同行者（喪主以外）専用：固定 -->
-    <div class="fixed-box" aria-label="利用区分固定">
-      <p class="fixed-title">利用区分：喪主以外（同行者）</p>
-      <p class="fixed-sub">※このページは「喪主以外」の方専用です。</p>
-    </div>
-    <input type="hidden" name="role" id="roleFixed" value="other" />
+    <!-- ✅ 利用区分は表示しない（内部的には喪主以外扱い） -->
+    <input type="hidden" id="roleFixed" name="role" value="other" />
 
-    <!-- ✅ 喪主情報は常に必須 -->
-    <div class="fixed-box" style="margin-top:12px;">
-      <p class="fixed-title">喪主の情報（必須）</p>
-      <p class="fixed-sub">喪主の方のお名前をご入力ください。</p>
+    <!-- ✅ 参加申込みは常に喪主情報が必要 -->
+    <div class="chief-box">
+      <p class="chief-title">喪主の情報（必須）</p>
+      <p class="chief-sub">喪主の方のお名前をご入力ください。</p>
 
       <label for="chiefName">喪主氏名（必須）</label>
       <input id="chiefName" name="chiefName" type="text" placeholder="例：山田 太郎" autocomplete="name" required />
@@ -441,11 +465,15 @@
     syncMasterFromIndividuals(); updateButtonState();
   });
 
+  // submit
   submitBtn.addEventListener('click', () => {
     syncHidden();
-    if(!birthdayHidden.value){ alert("生年月日（年・月・日）を選択してください。"); return; }
+    if(!birthdayHidden.value){
+      alert("生年月日（年・月・日）を選択してください。");
+      return;
+    }
 
-    // role固定：other
+    // 参加申込みは喪主以外固定
     localStorage.setItem("miniapp_registered", "1");
     localStorage.setItem("miniapp_user_role", "other");
     localStorage.setItem("miniapp_birthday", birthdayHidden.value);
