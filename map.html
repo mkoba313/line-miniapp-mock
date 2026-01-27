@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>館内案内</title>
+  <title>館内案内図</title>
 
   <style>
     :root{
@@ -75,7 +75,7 @@
       overflow:hidden;
     }
 
-    /* タブ */
+    /* タブ共通 */
     .tabs{
       display:flex;
       gap:10px;
@@ -94,6 +94,30 @@
       cursor:pointer;
     }
     .tab.active{
+      background: var(--primary);
+      color:#fff;
+      border-color: var(--primary);
+    }
+
+    /* 階層タブ（少しコンパクト） */
+    .tabsFloor{
+      display:flex;
+      gap:10px;
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+    .tabFloor{
+      flex:1;
+      height:44px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .tabFloor.active{
       background: var(--primary);
       color:#fff;
       border-color: var(--primary);
@@ -158,31 +182,39 @@
 <body>
   <header class="header">
     <div></div>
-    <div class="header-title">館内案内</div>
+    <div class="header-title">館内案内図</div>
     <a class="header-home" href="./index.html">ホーム</a>
   </header>
 
   <div class="wrap">
-    <section class="card" aria-label="館内マップ">
+    <section class="card" aria-label="館内案内図">
+
+      <!-- 店舗タブ -->
       <div class="tabs" role="tablist" aria-label="店舗切替">
-        <button class="tab active" id="tabA" type="button">A店</button>
-        <button class="tab" id="tabB" type="button">B店</button>
-        <button class="tab" id="tabC" type="button">C店</button>
-        <button class="tab" id="tabD" type="button">D店</button>
+        <button class="tab active" data-shop="A" type="button">A店</button>
+        <button class="tab" data-shop="B" type="button">B店</button>
+        <button class="tab" data-shop="C" type="button">C店</button>
+        <button class="tab" data-shop="D" type="button">D店</button>
+      </div>
+
+      <!-- 階層タブ -->
+      <div class="tabsFloor" role="tablist" aria-label="階層切替">
+        <button class="tabFloor active" data-floor="1F" type="button">1階</button>
+        <button class="tabFloor" data-floor="2F" type="button">2階</button>
+        <button class="tabFloor" data-floor="3F" type="button">3階</button>
       </div>
 
       <div class="mapArea">
         <div class="mapFrame">
           <div class="mapTitle">
-            <div id="mapName">A店 周辺マップ</div>
-            <div class="badge">葬儀場 館内図（デモ）</div>
+            <div id="mapName">A店（1階）</div>
+            <div id="mapBadge" class="badge">館内案内図（デモ）</div>
           </div>
 
-          <!-- ここにSVG（画像相当）を差し替える -->
           <div id="mapHost" class="svgWrap"></div>
 
           <div class="note">
-            ※モック用の仮マップです。実際の斎場図面/案内に差し替え前提。
+            ※モック用の仮マップです。実際の館内案内図に差し替え前提。
           </div>
         </div>
       </div>
@@ -190,12 +222,8 @@
   </div>
 
   <script>
-    // ===== 4店舗分の「館内マップ画像（SVG）」を用意 =====
-    // 斎場を意識：入口 / 受付 / 待合 / 式場 / 霊安室 / 売店(各店) / トイレ など
-
-    function svgCommon({ highlightLabel, highlightX, highlightY }) {
-      // 共通ベース：館内の箱＋部屋
-      // highlightX/Yはハイライト用のピン位置
+    // ===== SVG共通 =====
+    function svgCommon({ highlightLabel, highlightX, highlightY, floorLabel }) {
       return `
       <svg viewBox="0 0 800 600" width="100%" height="100%" aria-label="hall-map" role="img">
         <defs>
@@ -208,48 +236,46 @@
           </filter>
         </defs>
 
-        <!-- 背景 -->
         <rect x="0" y="0" width="800" height="600" fill="url(#bgG)"/>
 
-        <!-- 建物外枠 -->
         <rect x="40" y="40" width="720" height="520" rx="26" fill="#fff" stroke="#e5e7eb" stroke-width="3" filter="url(#shadow)"/>
 
-        <!-- 廊下 -->
+        <!-- フロア表示 -->
+        <rect x="60" y="58" width="110" height="34" rx="12" fill="#111827"></rect>
+        <text class="mapText" x="115" y="81" text-anchor="middle" font-size="14" font-weight="900" fill="#fff">${floorLabel}</text>
+
         <rect x="360" y="70" width="90" height="460" rx="18" fill="#f9fafb" stroke="#e5e7eb" stroke-width="2"/>
         <text class="mapText" x="405" y="300" text-anchor="middle" font-size="14" font-weight="800" fill="#6b7280" transform="rotate(-90 405 300)">通路</text>
 
-        <!-- エリア（左側） -->
-        <rect x="70" y="70" width="270" height="140" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="205" y="120" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">入口</text>
-        <text class="mapText" x="205" y="150" text-anchor="middle" font-size="13" font-weight="800" fill="#6b7280">正面玄関</text>
+        <!-- 左 -->
+        <rect x="70" y="110" width="270" height="120" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="205" y="160" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">入口</text>
 
-        <rect x="70" y="230" width="270" height="120" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="205" y="275" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">受付</text>
+        <rect x="70" y="250" width="270" height="110" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="205" y="310" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">受付</text>
 
-        <rect x="70" y="370" width="270" height="160" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="205" y="430" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">待合室</text>
-        <text class="mapText" x="205" y="460" text-anchor="middle" font-size="13" font-weight="800" fill="#6b7280">ご家族・参列者</text>
+        <rect x="70" y="380" width="270" height="150" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="205" y="450" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">待合室</text>
 
-        <!-- エリア（右側） -->
-        <rect x="470" y="70" width="260" height="150" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="600" y="125" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">式場</text>
-        <text class="mapText" x="600" y="155" text-anchor="middle" font-size="13" font-weight="800" fill="#6b7280">告別式エリア</text>
+        <!-- 右 -->
+        <rect x="470" y="110" width="260" height="130" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="600" y="170" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">式場</text>
 
-        <rect x="470" y="240" width="260" height="110" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="600" y="295" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">霊安室</text>
+        <rect x="470" y="260" width="260" height="100" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="600" y="320" text-anchor="middle" font-size="18" font-weight="900" fill="#111827">霊安室</text>
 
-        <rect x="470" y="370" width="120" height="160" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="530" y="435" text-anchor="middle" font-size="16" font-weight="900" fill="#111827">トイレ</text>
+        <rect x="470" y="380" width="120" height="150" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="530" y="450" text-anchor="middle" font-size="16" font-weight="900" fill="#111827">トイレ</text>
 
-        <rect x="610" y="370" width="120" height="160" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
-        <text class="mapText" x="670" y="435" text-anchor="middle" font-size="16" font-weight="900" fill="#111827">控室</text>
+        <rect x="610" y="380" width="120" height="150" rx="18" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+        <text class="mapText" x="670" y="450" text-anchor="middle" font-size="16" font-weight="900" fill="#111827">控室</text>
 
         <!-- 目的地ピン -->
         <g>
           <circle cx="${highlightX}" cy="${highlightY}" r="18" fill="#111827" opacity="0.10"></circle>
           <circle cx="${highlightX}" cy="${highlightY}" r="10" fill="#111827"></circle>
           <path d="M ${highlightX} ${highlightY+12} L ${highlightX-10} ${highlightY+40} L ${highlightX+10} ${highlightY+40} Z" fill="#111827"></path>
-          <rect x="${highlightX-60}" y="${highlightY-52}" width="120" height="34" rx="12" fill="#111827"></rect>
+          <rect x="${highlightX-70}" y="${highlightY-52}" width="140" height="34" rx="12" fill="#111827"></rect>
           <text class="mapText" x="${highlightX}" y="${highlightY-30}" text-anchor="middle" font-size="14" font-weight="900" fill="#fff">${highlightLabel}</text>
         </g>
 
@@ -257,54 +283,89 @@
       </svg>`;
     }
 
-    // 店舗別：売店を想定しつつ、位置を変えて「切替感」を出す
+    // ===== 店舗名（○○店表記をここで一括管理）=====
+    const SHOPS = {
+      A: "A店",
+      B: "B店",
+      C: "C店",
+      D: "D店",
+    };
+
+    // ===== マップ定義：店舗 × 階 =====
+    // ※ ピン位置は「切替感」重視の仮配置。実図面の座標に合わせて差し替え可。
     const MAPS = {
       A: {
-        name: "A店 周辺マップ",
-        svg: () => svgCommon({ highlightLabel:"A店", highlightX: 205, highlightY: 510 }) // 待合室付近
+        "1F": () => svgCommon({ highlightLabel:`${SHOPS.A}（売店）`, floorLabel:"1階", highlightX: 205, highlightY: 510 }),
+        "2F": () => svgCommon({ highlightLabel:`${SHOPS.A}（売店）`, floorLabel:"2階", highlightX: 205, highlightY: 300 }),
+        "3F": () => svgCommon({ highlightLabel:`${SHOPS.A}（売店）`, floorLabel:"3階", highlightX: 600, highlightY: 210 }),
       },
       B: {
-        name: "B店 周辺マップ",
-        svg: () => svgCommon({ highlightLabel:"B店", highlightX: 205, highlightY: 300 }) // 受付付近
+        "1F": () => svgCommon({ highlightLabel:`${SHOPS.B}（売店）`, floorLabel:"1階", highlightX: 205, highlightY: 300 }),
+        "2F": () => svgCommon({ highlightLabel:`${SHOPS.B}（売店）`, floorLabel:"2階", highlightX: 600, highlightY: 210 }),
+        "3F": () => svgCommon({ highlightLabel:`${SHOPS.B}（売店）`, floorLabel:"3階", highlightX: 670, highlightY: 480 }),
       },
       C: {
-        name: "C店 周辺マップ",
-        svg: () => svgCommon({ highlightLabel:"C店", highlightX: 600, highlightY: 210 }) // 式場付近
+        "1F": () => svgCommon({ highlightLabel:`${SHOPS.C}（売店）`, floorLabel:"1階", highlightX: 600, highlightY: 210 }),
+        "2F": () => svgCommon({ highlightLabel:`${SHOPS.C}（売店）`, floorLabel:"2階", highlightX: 670, highlightY: 480 }),
+        "3F": () => svgCommon({ highlightLabel:`${SHOPS.C}（売店）`, floorLabel:"3階", highlightX: 205, highlightY: 510 }),
       },
       D: {
-        name: "D店 周辺マップ",
-        svg: () => svgCommon({ highlightLabel:"D店", highlightX: 670, highlightY: 480 }) // 控室付近
+        "1F": () => svgCommon({ highlightLabel:`${SHOPS.D}（売店）`, floorLabel:"1階", highlightX: 670, highlightY: 480 }),
+        "2F": () => svgCommon({ highlightLabel:`${SHOPS.D}（売店）`, floorLabel:"2階", highlightX: 205, highlightY: 510 }),
+        "3F": () => svgCommon({ highlightLabel:`${SHOPS.D}（売店）`, floorLabel:"3階", highlightX: 205, highlightY: 300 }),
       }
     };
 
-    // ===== UI操作 =====
+    // ===== 状態 =====
+    let currentShop = "A";
+    let currentFloor = "1F";
+
+    // ===== DOM =====
     const mapNameEl = document.getElementById("mapName");
+    const mapBadgeEl = document.getElementById("mapBadge");
     const mapHost = document.getElementById("mapHost");
 
-    const tabs = {
-      A: document.getElementById("tabA"),
-      B: document.getElementById("tabB"),
-      C: document.getElementById("tabC"),
-      D: document.getElementById("tabD"),
-    };
+    const shopTabs = Array.from(document.querySelectorAll(".tab[data-shop]"));
+    const floorTabs = Array.from(document.querySelectorAll(".tabFloor[data-floor]"));
 
-    function setActive(key){
+    function render(){
       // タブ見た目
-      for(const k of Object.keys(tabs)){
-        tabs[k].classList.toggle("active", k === key);
-      }
+      shopTabs.forEach(btn => btn.classList.toggle("active", btn.dataset.shop === currentShop));
+      floorTabs.forEach(btn => btn.classList.toggle("active", btn.dataset.floor === currentFloor));
+
+      // 表示文言
+      const shopLabel = SHOPS[currentShop] || "店舗";
+      const floorLabel = currentFloor.replace("F","階");
+
+      mapNameEl.textContent = `${shopLabel}（${floorLabel}）`;
+      mapBadgeEl.textContent = `館内案内図（${floorLabel}・デモ）`;
+
       // マップ差し替え
-      mapNameEl.textContent = MAPS[key].name;
-      mapHost.innerHTML = MAPS[key].svg();
+      const svgFn = MAPS?.[currentShop]?.[currentFloor];
+      mapHost.innerHTML = svgFn ? svgFn() : `<div style="padding:16px;font-weight:800;color:#6b7280;">この階の案内図は準備中です</div>`;
     }
 
-    tabs.A.addEventListener("click", ()=>setActive("A"));
-    tabs.B.addEventListener("click", ()=>setActive("B"));
-    tabs.C.addEventListener("click", ()=>setActive("C"));
-    tabs.D.addEventListener("click", ()=>setActive("D"));
+    // 店舗切替
+    shopTabs.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        currentShop = btn.dataset.shop;
+
+        // 店舗切替時：そのまま同じ階を維持（存在しない場合は1Fへ）
+        if(!MAPS?.[currentShop]?.[currentFloor]) currentFloor = "1F";
+        render();
+      });
+    });
+
+    // 階切替
+    floorTabs.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        currentFloor = btn.dataset.floor;
+        render();
+      });
+    });
 
     // 初期表示
-    setActive("A");
+    render();
   </script>
 </body>
 </html>
