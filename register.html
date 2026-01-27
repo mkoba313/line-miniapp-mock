@@ -11,7 +11,6 @@
       --muted:#6b7280;
       --border:#e5e7eb;
       --primary:#111827;
-      --disabled:#9ca3af;
       --card:#ffffff;
       --shadow:0 6px 18px rgba(0,0,0,.06);
       --radius:16px;
@@ -93,6 +92,7 @@
       outline:none;
       -webkit-appearance:none;
       appearance:none;
+      background:#fff;
     }
     input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus{
       border-color:#9ca3af;
@@ -103,7 +103,7 @@
       margin-top:6px;
     }
 
-    /* ✅ 役割選択：基本は横並び、狭い画面は縦 */
+    /* ✅ 利用区分：横並び（狭い画面は縦） */
     .role-grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -179,6 +179,27 @@
       color:#9ca3af;
       font-size:16px;
       pointer-events:none;
+    }
+
+    /* ✅ 喪主情報（喪主以外のときだけ表示） */
+    .chief-box{
+      margin-top:12px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fafafa;
+      display:none;
+    }
+    .chief-title{
+      font-weight:900;
+      margin:0 0 6px 0;
+      font-size:15px;
+    }
+    .chief-sub{
+      margin:0 0 10px 0;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
     }
 
     details{
@@ -286,30 +307,46 @@
   <form id="registerForm" class="card" onsubmit="return false;">
     <h2 class="section-title">会員登録（火葬申込み）</h2>
 
-    <!-- 役割 -->
+    <!-- ✅ 利用区分（喪主 / 喪主以外） -->
     <label>利用区分（必須）</label>
     <div class="role-grid" role="radiogroup" aria-label="利用区分">
       <label class="role-card" for="roleChief">
         <input type="radio" name="role" value="chief" id="roleChief" required>
         <div class="role-text">
           <div class="role-title">喪主</div>
-          <div class="role-sub">火葬申込み・代表者として手続きを進めます</div>
+          <div class="role-sub">申込者として手続きを進めます</div>
         </div>
       </label>
 
-      <label class="role-card" for="roleCompanion">
-        <input type="radio" name="role" value="companion" id="roleCompanion" required>
+      <label class="role-card" for="roleOther">
+        <input type="radio" name="role" value="other" id="roleOther" required>
         <div class="role-text">
-          <div class="role-title">同行者</div>
-          <div class="role-sub">館内案内などを利用します（申込み手続きはできません）</div>
+          <div class="role-title">喪主以外</div>
+          <div class="role-sub">喪主情報の入力が必要です</div>
         </div>
       </label>
+    </div>
+
+    <!-- ✅ 喪主以外のときだけ表示 -->
+    <div id="chiefBox" class="chief-box" aria-live="polite">
+      <p class="chief-title">喪主の情報（必須）</p>
+      <p class="chief-sub">※「喪主以外」を選択した場合のみ入力してください。</p>
+
+      <label for="chiefName">喪主氏名（必須）</label>
+      <input id="chiefName" name="chiefName" type="text" placeholder="例：山田 太郎" autocomplete="name" />
+
+      <label for="chiefKana">喪主氏名（ふりがな）（必須）</label>
+      <input id="chiefKana" name="chiefKana" type="text" placeholder="例：やまだ たろう" inputmode="kana" autocomplete="off" />
     </div>
 
     <label for="name">申込者氏名（必須）</label>
     <input id="name" name="name" type="text" placeholder="例：山田 太郎" autocomplete="name" required />
 
-    <!-- ✅ 追加：生年月日（必須：年月日） -->
+    <!-- ✅ 追加：申込者氏名（ふりがな） -->
+    <label for="nameKana">申込者氏名（ふりがな）（必須）</label>
+    <input id="nameKana" name="nameKana" type="text" placeholder="例：やまだ たろう" inputmode="kana" autocomplete="off" required />
+
+    <!-- 生年月日 -->
     <label>生年月日（必須）</label>
     <div class="dob-grid" aria-label="生年月日">
       <div class="select-wrap">
@@ -328,7 +365,6 @@
         </select>
       </div>
     </div>
-    <!-- 送信用 hidden -->
     <input type="hidden" id="birthday" name="birthday" />
 
     <label for="tel">電話番号（必須）</label>
@@ -379,7 +415,7 @@
         </ul>
         <p><strong>3. 個人情報の取扱い（火葬の規約に含む）</strong></p>
         <ul>
-          <li>取得する情報：氏名、電話番号、住所、メールアドレス（任意）、その他申込みに必要な情報</li>
+          <li>取得する情報：氏名、ふりがな、生年月日、電話番号、住所、メールアドレス（任意）、その他申込みに必要な情報</li>
           <li>利用目的：申込み受付、本人確認、連絡、運営上必要な案内、問合せ対応 等</li>
           <li>第三者提供：法令に基づく場合等を除き、本人同意なく提供しません。</li>
           <li>安全管理：不正アクセス等の防止に努めます。</li>
@@ -456,6 +492,33 @@
 </main>
 
 <script>
+  // ===== 利用区分：喪主以外のときだけ喪主情報を表示＆必須化 =====
+  const roleChief = document.getElementById("roleChief");
+  const roleOther = document.getElementById("roleOther");
+  const chiefBox  = document.getElementById("chiefBox");
+  const chiefName = document.getElementById("chiefName");
+  const chiefKana = document.getElementById("chiefKana");
+
+  function setChiefRequired(isRequired){
+    chiefName.required = isRequired;
+    chiefKana.required = isRequired;
+  }
+
+  function onRoleChange(){
+    const isOther = roleOther.checked;
+    chiefBox.style.display = isOther ? "block" : "none";
+    setChiefRequired(isOther);
+
+    if(!isOther){
+      chiefName.value = "";
+      chiefKana.value = "";
+    }
+  }
+
+  roleChief.addEventListener("change", onRoleChange);
+  roleOther.addEventListener("change", onRoleChange);
+  onRoleChange(); // 初期
+
   // ===== 生年月日：年/月/日を生成 =====
   const birthYear  = document.getElementById("birthYear");
   const birthMonth = document.getElementById("birthMonth");
@@ -465,7 +528,6 @@
   function fillYears(){
     const now = new Date();
     const thisYear = now.getFullYear();
-    // 例：1900〜今年（必要なら調整）
     for(let y = thisYear; y >= 1900; y--){
       const opt = document.createElement("option");
       opt.value = String(y);
@@ -485,7 +547,6 @@
     return new Date(y, m, 0).getDate(); // mは1-12
   }
   function rebuildDays(){
-    // いったん日をクリア（先頭optionは残す）
     birthDay.querySelectorAll("option:not([disabled])").forEach(o=>o.remove());
 
     const y = parseInt(birthYear.value,10);
@@ -507,7 +568,7 @@
     if(y && m && d){
       const mm = String(m).padStart(2,"0");
       const dd = String(d).padStart(2,"0");
-      birthdayHidden.value = `${y}-${mm}-${dd}`; // 送信用
+      birthdayHidden.value = `${y}-${mm}-${dd}`;
     }else{
       birthdayHidden.value = "";
     }
@@ -518,7 +579,7 @@
   birthMonth.addEventListener("change", ()=>{ rebuildDays(); birthDay.value=""; syncHidden(); });
   birthDay.addEventListener("change", syncHidden);
 
-  // ===== 同意UI（そのまま） =====
+  // ===== 同意UI =====
   const allAgree = document.getElementById('allAgree');
   const cremationScroll = document.getElementById('cremationScroll');
   const miniappScroll = document.getElementById('miniappScroll');
@@ -619,12 +680,20 @@
     updateButtonState();
   });
 
-  // submit -> 必須チェック（役割/生年月日）してからホームへ
+  // submit -> 必須チェックしてホームへ
   submitBtn.addEventListener('click', () => {
     const role = document.querySelector('input[name="role"]:checked')?.value;
     if(!role){
-      alert("利用区分（喪主／同行者）を選択してください。");
+      alert("利用区分（喪主／喪主以外）を選択してください。");
       return;
+    }
+
+    // 喪主以外なら喪主情報必須
+    if(role === "other"){
+      if(!chiefName.value.trim() || !chiefKana.value.trim()){
+        alert("喪主の情報（喪主氏名・ふりがな）を入力してください。");
+        return;
+      }
     }
 
     syncHidden();
@@ -633,9 +702,21 @@
       return;
     }
 
+    // 本来はAPI送信→成功後に登録済み保存
     localStorage.setItem("miniapp_registered", "1");
     localStorage.setItem("miniapp_user_role", role);
     localStorage.setItem("miniapp_birthday", birthdayHidden.value);
+
+    // 任意：モックとして保存
+    localStorage.setItem("miniapp_applicant_name", document.getElementById("name").value.trim());
+    localStorage.setItem("miniapp_applicant_kana", document.getElementById("nameKana").value.trim());
+    if(role === "other"){
+      localStorage.setItem("miniapp_chief_name", chiefName.value.trim());
+      localStorage.setItem("miniapp_chief_kana", chiefKana.value.trim());
+    }else{
+      localStorage.removeItem("miniapp_chief_name");
+      localStorage.removeItem("miniapp_chief_kana");
+    }
 
     window.location.replace("./index.html");
   });
