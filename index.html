@@ -250,11 +250,11 @@
             <button id="btnNotToday" type="button">当日以外</button>
           </div>
 
-          <!-- 状態（チェックイン切替） -->
-          <div class="seg" aria-label="チェックイン切替">
+          <!-- 状態（受付切替） -->
+          <div class="seg" aria-label="受付切替">
             <span class="lbl">状態</span>
-            <button id="btnCheckedIn" type="button">チェックイン済</button>
-            <button id="btnNotCheckedIn" type="button">未チェックイン</button>
+            <button id="btnCheckedIn" type="button">受付完了</button>
+            <button id="btnNotCheckedIn" type="button">受付してください</button>
           </div>
 
           <div class="status">
@@ -284,43 +284,43 @@
             <div class="chev">›</div>
           </a>
 
-          <!-- チェックイン（当日のみ活性） -->
+          <!-- 受付（当日のみ活性） -->
           <a class="item" id="checkinItem" href="./checkin.html">
             <div class="left">
               <div class="icon">✅</div>
               <div class="text">
-                <div class="label">チェックイン</div>
+                <div class="label">受付</div>
                 <div class="sub" id="checkinSub">当日の受付</div>
                 <div class="note" id="checkinNote">※当日以外は非活性になります</div>
                 <div class="tag" id="checkinTag" style="display:none;">
-                  <span class="miniDot"></span>チェックイン済み
+                  <span class="miniDot"></span>受付完了
                 </div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
-          <!-- オーダー（当日かつチェックイン後に活性） -->
+          <!-- 注文（当日かつ受付完了後に活性） -->
           <a class="item" id="orderItem" href="./order.html">
             <div class="left">
               <div class="icon">🛒</div>
               <div class="text">
-                <div class="label">オーダー</div>
+                <div class="label">注文</div>
                 <div class="sub">売店</div>
-                <div class="note" id="orderNote">※チェックイン後に利用できます</div>
+                <div class="note" id="orderNote">※受付完了後に利用できます</div>
               </div>
             </div>
             <div class="chev">›</div>
           </a>
 
-          <!-- 館内マップ（当日かつチェックイン後に活性） -->
+          <!-- 館内案内図（当日かつ受付完了後に活性） -->
           <a class="item" id="mapItem" href="./map.html">
             <div class="left">
               <div class="icon">🗺️</div>
               <div class="text">
-                <div class="label">館内マップ</div>
-                <div class="sub">地図／導線</div>
-                <div class="note" id="mapNote">※チェックイン後に利用できます</div>
+                <div class="label">館内案内図</div>
+                <div class="sub">地図／階層</div>
+                <div class="note" id="mapNote">※受付完了後に利用できます</div>
               </div>
             </div>
             <div class="chev">›</div>
@@ -398,11 +398,11 @@
       btnToday.classList.toggle("active", today);
       btnNotToday.classList.toggle("active", !today);
 
-      // 状態スイッチ
+      // 状態スイッチ（受付完了 / 受付してください）
       btnCheckedIn.classList.toggle("active", checkedIn);
       btnNotCheckedIn.classList.toggle("active", !checkedIn);
 
-      // 当日だけチェックイン活性（当日以外は非活性）
+      // 当日だけ受付活性（当日以外は非活性）
       if(today){
         checkinItem.classList.remove("disabled");
         checkinNote.style.display = "none";
@@ -411,16 +411,16 @@
         checkinNote.style.display = "";
       }
 
-      // チェックイン済みタグ
+      // 受付完了タグ
       if(checkedIn){
         checkinTag.style.display = "";
-        checkinSub.textContent = "チェックイン済み（確認）";
+        checkinSub.textContent = "受付完了（確認）";
       }else{
         checkinTag.style.display = "none";
         checkinSub.textContent = "当日の受付";
       }
 
-      // 当日 & チェックイン済み のときだけ、オーダー/館内マップ活性
+      // 当日 & 受付完了 のときだけ、注文/館内案内図活性
       if(today && checkedIn){
         orderItem.classList.remove("disabled");
         mapItem.classList.remove("disabled");
@@ -448,16 +448,16 @@
       render("not_today");
     };
 
-    // 状態切替（チェックイン / 未チェックイン）
+    // 状態切替（受付完了 / 受付してください）
     btnCheckedIn.onclick = () => {
       setCheckinMock();
       render(localStorage.getItem(DAY_KEY) || "not_today");
-      alert("チェックイン済みにしました（モック）。");
+      alert("受付完了にしました（モック）。");
     };
     btnNotCheckedIn.onclick = () => {
       clearAllCheckin();
       render(localStorage.getItem(DAY_KEY) || "not_today");
-      alert("未チェックインに戻しました（モック）。");
+      alert("受付してください（モック）。");
     };
 
     // checkin.html から戻ってきた時に反映（LINE WebView対策）
